@@ -1,0 +1,39 @@
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+
+interface PrimaryButtonProps {
+  title: string;
+  onPress: () => void;
+  accessibilityLabel?: string;
+}
+
+const PrimaryButton: React.FC<PrimaryButtonProps> = ({ title, onPress, accessibilityLabel }) => {
+  return (
+    <TouchableOpacity onPress={onPress} accessibilityLabel={accessibilityLabel} style={styles.touchableWrapper}>
+      <LinearGradient colors={['#6a11cb', '#f50087']} style={styles.button}>
+        <Text style={styles.buttonText}>{title}</Text>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+};
+
+export default PrimaryButton;
+
+const styles = StyleSheet.create({
+  button: {
+    width: '80%',
+    paddingVertical: 14,
+    borderRadius: 30,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  touchableWrapper: {
+    width: '100%',
+    alignItems: 'center',
+  },
+});
