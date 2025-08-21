@@ -1,10 +1,4 @@
-import {
-  Alert,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useCallback, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -18,7 +12,7 @@ import GradientInput from '../components/GradientInput';
 const LoginScreen = () => {
   type OnBoardingScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,
-    'OnBoarding'
+    'Login'
   >;
 
   const navigation = useNavigation<OnBoardingScreenNavigationProp>();
@@ -43,7 +37,9 @@ const LoginScreen = () => {
     onSubmit: async (values, { setSubmitting }) => {
       try {
         await auth().signInWithEmailAndPassword(values.email, values.password);
-        Alert.alert('Success', 'You are Logged in Successfully');
+        Alert.alert('Success', 'You are Logged in Successfully', [
+          { text: 'OK', onPress: () => navigation.navigate('Home') },
+        ]);
       } catch (err) {
         console.error(err);
         Alert.alert('OOPs! Login Failed');
@@ -73,7 +69,6 @@ const LoginScreen = () => {
       <View style={styles.formContainer}>
         {/* Email Input */}
         <GradientInput
-          style={styles.input}
           placeholder="Enter your Email"
           value={formik.values.email}
           onChangeText={formik.handleChange('email')}
@@ -85,7 +80,6 @@ const LoginScreen = () => {
 
         {/* Password Input */}
         <GradientInput
-          style={styles.input}
           placeholder="Enter Your Password"
           secureTextEntry
           value={formik.values.password}
@@ -141,16 +135,6 @@ const styles = StyleSheet.create({
   formContainer: {
     width: '100%',
     padding: 10,
-  },
-  input: {
-    width: '100%',
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    marginTop: 10,
-    marginBottom: 10,
   },
   errorText: {
     color: 'red',

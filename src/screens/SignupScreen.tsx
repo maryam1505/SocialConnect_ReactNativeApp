@@ -12,7 +12,7 @@ import GradientInput from '../components/GradientInput';
 const SignupScreen = () => {
   type OnBoardingScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,
-    'OnBoarding'
+    'Signup'
   >;
 
   const navigation = useNavigation<OnBoardingScreenNavigationProp>();
@@ -38,11 +38,45 @@ const SignupScreen = () => {
     }),
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        await auth().signInWithEmailAndPassword(values.email, values.password);
-        Alert.alert('Success', 'You are Signed in Successfully');
+        const userCredential = await auth().createUserWithEmailAndPassword(
+          values.email,
+          values.password,
+        );
+        await userCredential.user.updateProfile({ displayName: values.name });
+        Alert.alert('Success', 'Account created successfully', [
+          { text: 'OK', onPress: () => navigation.navigate('Home') },
+        ]);
       } catch (err) {
         console.error(err);
-        Alert.alert('OOPs! Signed in Failed');
+        let errorMessage = 'Something went wrong. Please try again later.';
+
+        if (err instanceof Error) {
+          // Optionally, log the raw error
+          console.log('Error message:', err.message);
+          errorMessage = err.message;
+        }
+
+        // Firebase-specific narrowing
+        if (
+          typeof err === 'object' &&
+          err !== null &&
+          'code' in err &&
+          typeof (err as any).code === 'string'
+        ) {
+          const errorCode = (err as any).code;
+
+          if (errorCode === 'auth/email-already-in-use') {
+            errorMessage = 'This email is already in use.';
+          } else if (errorCode === 'auth/invalid-email') {
+            errorMessage = 'Invalid email address.';
+          } else if (errorCode === 'auth/weak-password') {
+            errorMessage = 'Password must be at least 6 characters.';
+          } else if (errorCode === 'auth/configuration-not') {
+            errorMessage = 'Firebase authentication is not configured.';
+          }
+        }
+
+        Alert.alert('OOPs! Signup Failed', errorMessage);
       } finally {
         setSubmitting(false);
       }
@@ -53,12 +87,10 @@ const SignupScreen = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Sign Up</Text>
       <View style={styles.formContainer}>
-
         {/* Name Input */}
         <GradientInput
-          style={styles.input}
           placeholder="Enter your name"
-          value={formik.values.email}
+          value={formik.values.name}
           onChangeText={formik.handleChange('name')}
           onBlur={formik.handleBlur('name')}
           autoCapitalize="none"
@@ -67,7 +99,6 @@ const SignupScreen = () => {
 
         {/* Email Input */}
         <GradientInput
-          style={styles.input}
           placeholder="Enter your Email"
           value={formik.values.email}
           onChangeText={formik.handleChange('email')}
@@ -79,7 +110,6 @@ const SignupScreen = () => {
 
         {/* Password Input */}
         <GradientInput
-          style={styles.input}
           placeholder="Enter Your Password"
           secureTextEntry
           value={formik.values.password}
@@ -130,16 +160,6 @@ const styles = StyleSheet.create({
   formContainer: {
     width: '100%',
     padding: 10,
-  },
-  input: {
-    width: '100%',
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    marginTop: 10,
-    marginBottom: 10,
   },
   errorText: {
     color: 'red',
