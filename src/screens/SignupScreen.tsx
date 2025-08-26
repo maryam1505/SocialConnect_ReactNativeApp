@@ -50,12 +50,6 @@ const SignupScreen = () => {
         console.error(err);
         let errorMessage = 'Something went wrong. Please try again later.';
 
-        if (err instanceof Error) {
-          // Optionally, log the raw error
-          console.log('Error message:', err.message);
-          errorMessage = err.message;
-        }
-
         // Firebase-specific narrowing
         if (
           typeof err === 'object' &&

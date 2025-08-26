@@ -1,10 +1,11 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
-import React, { useCallback } from 'react';
+import React from 'react';
 import PrimaryButton from '../components/PrimaryButton';
 import { useNavigation } from '@react-navigation/native';
 
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
+import { setOnboardingSeen } from '../utils/storage';
 
 type OnBoardingScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -14,9 +15,10 @@ type OnBoardingScreenNavigationProp = NativeStackNavigationProp<
 const OnBoardingScreen = () => {
   const navigation = useNavigation<OnBoardingScreenNavigationProp>();
 
-  const handlePress = useCallback(() => {
-   navigation.navigate("Login")
-  }, [navigation]);
+  const handlePress = async () => {
+    await setOnboardingSeen();
+    navigation.replace("Login");
+  };
 
   return (
     <View style={styles.container}>
