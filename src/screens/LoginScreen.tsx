@@ -1,5 +1,5 @@
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback} from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import auth from '@react-native-firebase/auth';
@@ -8,6 +8,8 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import GradientInput from '../components/GradientInput';
+import { useTheme } from '../context/ThemeContext';
+
 
 const LoginScreen = () => {
   type OnBoardingScreenNavigationProp = NativeStackNavigationProp<
@@ -16,6 +18,8 @@ const LoginScreen = () => {
   >;
 
   const navigation = useNavigation<OnBoardingScreenNavigationProp>();
+
+  const { appTheme } = useTheme(); 
 
   // Navigate to Sign Up
   const handlePress = useCallback(() => {
@@ -64,8 +68,8 @@ const LoginScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sign In</Text>
+    <View style={[styles.container, { backgroundColor: appTheme.colors.background },]}>
+      <Text style={[ styles.title, { color: appTheme.colors.textPrimary, fontFamily: appTheme.fonts.bold.fontFamily }, ]}>Sign In</Text>
       <View style={styles.formContainer}>
         {/* Email Input */}
         <GradientInput
@@ -90,7 +94,7 @@ const LoginScreen = () => {
 
         {/* Forgot Password */}
         <TouchableOpacity onPress={handleForgotPassword}>
-          <Text style={styles.forgotPassword}>Forgot your password?</Text>
+          <Text style={[ styles.forgotPassword, { color: appTheme.colors.primaryLight }, ]}>Forgot your password?</Text>
         </TouchableOpacity>
 
         <PrimaryButton
@@ -101,9 +105,9 @@ const LoginScreen = () => {
 
         {/* Sign Up Link */}
         <View style={styles.signupContainer}>
-          <Text>Don’t have an account? </Text>
+          <Text style={{ color: appTheme.colors.textSecondary }}>Don’t have an account?{' '}</Text>
           <TouchableOpacity onPress={handlePress}>
-            <Text style={styles.signupText}>Sign up</Text>
+            <Text style={[ styles.signupText, { color: appTheme.colors.primaryLight }, ]}>Sign up</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -119,17 +123,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     justifyContent: 'center',
-    backgroundColor: '#fff',
     padding: 20,
   },
   title: {
-    fontFamily: 'Poppins-SemiBold',
     fontWeight: '500',
     fontSize: 40,
     lineHeight: 56,
-    letterSpacing: 0,
     textAlign: 'center',
-    color: '#1A1B23',
     marginBottom: 40,
   },
   formContainer: {
@@ -143,7 +143,6 @@ const styles = StyleSheet.create({
   },
   forgotPassword: {
     alignSelf: 'flex-end',
-    color: '#8a2be2',
     textDecorationLine: 'underline',
     marginBottom: 20,
   },
@@ -153,7 +152,6 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   signupText: {
-    color: 'purple',
     fontWeight: '700',
   },
 });

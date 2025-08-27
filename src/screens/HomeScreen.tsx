@@ -1,42 +1,51 @@
-import { BackHandler, StyleSheet, Text, ToastAndroid, View } from 'react-native'
-import React, { useEffect } from 'react'
+import {
+  BackHandler,
+  StyleSheet,
+  View,
+} from 'react-native';
+import React, { useEffect } from 'react';
+import HomeNav from '../components/HomeNav';
+import { useTheme } from '../context/ThemeContext';
+import Feed from '../components/Feed';
+
 
 const HomeScreen = () => {
-  useEffect(()=> {
+  const { appTheme } = useTheme(); 
+  useEffect(() => {
     const backAction = () => {
-      ToastAndroid.show("Back again to exit", ToastAndroid.SHORT);
+      /* ToastAndroid.show('Back again to exit', ToastAndroid.SHORT); */
       BackHandler.exitApp();
       return true;
     };
     const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress", backAction
+      'hardwareBackPress',
+      backAction,
     );
     return () => backHandler.remove();
   });
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome to the Home Screen</Text>
-    </View>
-  )
-}
+      <View style={[styles.container,{backgroundColor: appTheme.colors.background }]}>
+        <HomeNav/>
+        <Feed/>
+      </View>
+  );
+};
 
 export default HomeScreen;
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 20,
-    },
-    title: {
-    fontFamily: 'Poppins-SemiBold',
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  title: {
     fontWeight: '500',
     fontSize: 40,
     lineHeight: 56,
     letterSpacing: 0,
     textAlign: 'center',
-    color: '#1A1B23',
     marginBottom: 40,
   },
 });

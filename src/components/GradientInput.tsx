@@ -26,7 +26,7 @@ const GradientInput: React.FC<GradientInputProps> = ({
         style={[
           styles.input,
           style,
-          { borderColor: error ? '#ff4d4d' : isFocused ? '#8a2be2' : '#ccc' },
+          { borderColor: error ? '#ff4d4d' : isFocused ? '#200122' : '#ccc' },
           {marginBottom: error ? 2 : 10}
         ]}
         onFocus={() => setIsFocused(true)}

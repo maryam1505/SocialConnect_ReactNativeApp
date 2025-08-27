@@ -10,7 +10,7 @@ interface PrimaryButtonProps {
 const PrimaryButton: React.FC<PrimaryButtonProps> = ({ title, onPress, accessibilityLabel }) => {
   return (
     <TouchableOpacity onPress={onPress} accessibilityLabel={accessibilityLabel} style={styles.touchableWrapper}>
-      <LinearGradient colors={['#6a11cb', '#f50087']} style={styles.button}>
+      <LinearGradient colors={['#200122', '#108DC7']} style={styles.button}>
         <Text style={styles.buttonText}>{title}</Text>
       </LinearGradient>
     </TouchableOpacity>

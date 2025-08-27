@@ -5,7 +5,7 @@ const Loader = () => {
   return (
     <View style={styles.container}>
       <Image
-        source={require('../../assets/images/Logo.png')}
+        source={require('../../assets/images/splashImage.png')}
         style={{ width: "50%", height: "50%" }}
       />
       <ActivityIndicator size="large" color={'purple'} />

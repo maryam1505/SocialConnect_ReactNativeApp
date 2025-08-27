@@ -8,6 +8,8 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import GradientInput from '../components/GradientInput';
+import { useTheme } from '../context/ThemeContext';
+
 
 const SignupScreen = () => {
   type OnBoardingScreenNavigationProp = NativeStackNavigationProp<
@@ -16,6 +18,7 @@ const SignupScreen = () => {
   >;
 
   const navigation = useNavigation<OnBoardingScreenNavigationProp>();
+  const { appTheme } = useTheme(); 
 
   // Navigate to Login
   const handlePress = useCallback(() => {
@@ -78,8 +81,8 @@ const SignupScreen = () => {
   });
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
+    <View style={[styles.container, { backgroundColor: appTheme.colors.background },]}>
+      <Text style={[ styles.title, { color: appTheme.colors.textPrimary, fontFamily: appTheme.fonts.bold.fontFamily }, ]}>Sign Up</Text>
       <View style={styles.formContainer}>
         {/* Name Input */}
         <GradientInput
@@ -120,9 +123,9 @@ const SignupScreen = () => {
 
         {/* Sign In Link */}
         <View style={styles.signupContainer}>
-          <Text>Already have an account? </Text>
+          <Text style={{ color: appTheme.colors.textSecondary }}>Already have an account?{' '}</Text>
           <TouchableOpacity onPress={handlePress}>
-            <Text style={styles.signupText}>Sign in</Text>
+            <Text style={[ styles.signupText, { color: appTheme.colors.primaryLight }, ]}>Sign in</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -138,17 +141,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     justifyContent: 'center',
-    backgroundColor: '#fff',
     padding: 20,
   },
   title: {
-    fontFamily: 'Poppins-SemiBold',
     fontWeight: '500',
     fontSize: 40,
     lineHeight: 56,
     letterSpacing: 0,
     textAlign: 'center',
-    color: '#1A1B23',
     marginBottom: 40,
   },
   formContainer: {
@@ -162,7 +162,6 @@ const styles = StyleSheet.create({
   },
   forgotPassword: {
     alignSelf: 'flex-end',
-    color: '#8a2be2',
     textDecorationLine: 'underline',
     marginBottom: 20,
   },
@@ -172,7 +171,6 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   signupText: {
-    color: 'purple',
     fontWeight: '700',
   },
 });
