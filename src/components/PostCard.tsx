@@ -1,13 +1,14 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import Ionicons from '@react-native-vector-icons/ionicons';
+import { formatDistanceToNow } from 'date-fns';
 
 export interface Post {
   id: string;
   userName: string;
-  userAvatar: string;
+  userAvatar: string | number;
   text?: string;
-  imageUrl?: string;
+  imageUrl?: string | number;
   likes?: number;
   comments?: number;
   shares?: number;
@@ -23,17 +24,36 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     <View style={styles.card}>
       {/* User Info */}
       <View style={styles.header}>
-        <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
+        <Image
+          source={
+            typeof post.userAvatar === 'string'
+              ? { uri: post.userAvatar }
+              : post.userAvatar
+          }
+          style={styles.avatar}
+        />
         <View style={{ flex: 1 }}>
           <Text style={styles.name}>{post.userName}</Text>
           <Text style={styles.time}>
-            {post.createdAt?.toDate().toLocaleString() ?? 'Just now'}
+            {post?.createdAt
+              ? formatDistanceToNow(post.createdAt.toDate(), {
+                  addSuffix: true,
+                })
+              : 'Just now'}
           </Text>
         </View>
       </View>
+
       {/* Post Image */}
       {post.imageUrl ? (
-        <Image source={{ uri: post.imageUrl }} style={styles.postImage} />
+        <Image
+          source={
+            typeof post.imageUrl === 'string'
+              ? { uri: post.imageUrl }
+              : post.imageUrl
+          }
+          style={styles.postImage}
+        />
       ) : null}
 
       {/* Post Text */}
@@ -63,8 +83,8 @@ export default PostCard;
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 20,
+    borderRadius: 10,
+    marginBottom: 15,
     padding: 12,
     shadowColor: '#000',
     shadowOpacity: 0.05,
@@ -75,7 +95,7 @@ const styles = StyleSheet.create({
   avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
   name: { fontWeight: 'bold', fontSize: 16 },
   time: { color: 'gray', fontSize: 12 },
-  postImage: { width: '100%', height: 200, borderRadius: 10, marginBottom: 10 },
+  postImage: { width: '100%', height: 250, borderRadius: 10, marginBottom: 10 },
   text: { fontSize: 14, color: '#333', marginBottom: 10 },
   engagement: {
     flexDirection: 'row',

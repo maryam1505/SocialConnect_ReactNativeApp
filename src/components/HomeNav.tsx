@@ -6,10 +6,10 @@ import BellIcon from '../../assets/icons/bell-filled.svg';
 const HomeNav = () => {
   const { appTheme } = useTheme();
   return (
-    <View style={[styles.container, { backgroundColor: appTheme.colors.background },]}>
-      <Text style={styles.title}>
-        <Text style={{color: appTheme.colors.primaryLight}}>Social</Text>
-        <Text style={{color: appTheme.colors.primaryDark}}>Connect</Text>
+    <View style={styles.container}>
+      <Text>
+        <Text style={[styles.social, {color: appTheme.colors.primaryLight},]}>Social</Text>
+        <Text style={[styles.connect, { color: appTheme.colors.primaryDark, fontFamily: appTheme.fonts.medium.fontFamily },]}>Connect</Text>
       </Text>
       <TouchableOpacity>
         <BellIcon width={22} height={22}/>
@@ -28,6 +28,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     width:"100%",
+    backgroundColor: "#fff",
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+    marginBottom: 20,
     // 🔹 Shadow for iOS
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -37,8 +41,10 @@ const styles = StyleSheet.create({
     // 🔹 Shadow for Android
     elevation: 3,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: "600",
+  social: {
+    fontSize: 16,
   },
+  connect: {
+    fontSize: 18,
+  }
 });

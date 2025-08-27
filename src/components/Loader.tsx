@@ -8,7 +8,7 @@ const Loader = () => {
         source={require('../../assets/images/splashImage.png')}
         style={{ width: "50%", height: "50%" }}
       />
-      <ActivityIndicator size="large" color={'purple'} />
+      <ActivityIndicator size="large" color={'#1A2B44'} />
       <Text style={styles.title}>Loading...</Text>
     </View>
   );

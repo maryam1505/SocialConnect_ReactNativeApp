@@ -7,6 +7,7 @@ import React, { useEffect } from 'react';
 import HomeNav from '../components/HomeNav';
 import { useTheme } from '../context/ThemeContext';
 import Feed from '../components/Feed';
+import FootNav from '../components/FootNav';
 
 
 const HomeScreen = () => {
@@ -24,10 +25,13 @@ const HomeScreen = () => {
     return () => backHandler.remove();
   });
   return (
-      <View style={[styles.container,{backgroundColor: appTheme.colors.background }]}>
+    <>
         <HomeNav/>
+      <View style={[styles.container,{backgroundColor: appTheme.colors.background }]}>
         <Feed/>
       </View>
+      <FootNav/>
+    </>
   );
 };
 
@@ -36,9 +40,7 @@ export default HomeScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    padding: 10,
   },
   title: {
     fontWeight: '500',
