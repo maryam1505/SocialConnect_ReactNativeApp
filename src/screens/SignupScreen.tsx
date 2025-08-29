@@ -9,6 +9,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import GradientInput from '../components/GradientInput';
 import { useTheme } from '../context/ThemeContext';
+import firestore from '@react-native-firebase/firestore';
 
 
 const SignupScreen = () => {
@@ -45,15 +46,25 @@ const SignupScreen = () => {
           values.email,
           values.password,
         );
-        await userCredential.user.updateProfile({ displayName: values.name });
+        const user = userCredential.user;
+
+        await user.updateProfile({ displayName: values.name });
+        await firestore().collection('users').doc(user.uid).set({
+          userId: user.uid,
+          name: values.name,
+          email: user.email,
+          bio: "This is my Profile Bio",
+          imageUrl: null,                
+          totalPosts: 0,
+          createdAt: firestore.FieldValue.serverTimestamp(),
+          updatedAt: firestore.FieldValue.serverTimestamp(),
+        });
         Alert.alert('Success', 'Account created successfully', [
           { text: 'OK', onPress: () => navigation.navigate('Home') },
         ]);
       } catch (err) {
-        console.error(err);
         let errorMessage = 'Something went wrong. Please try again later.';
 
-        // Firebase-specific narrowing
         if (
           typeof err === 'object' &&
           err !== null &&

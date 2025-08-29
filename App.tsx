@@ -13,6 +13,8 @@ import auth from '@react-native-firebase/auth';
 import { checkOnboardingSeen } from './src/utils/storage';
 import Loader from './src/components/Loader';
 import { ThemeProvider, useTheme } from "./src/context/ThemeContext";
+import NewPostScreen from './src/screens/NewPostScreen';
+import NotificationScreen from './src/screens/NotificationScreen';
 
 export type RootStackParamList = {
   OnBoarding: undefined;
@@ -22,6 +24,8 @@ export type RootStackParamList = {
   Home: undefined;
   Profile: undefined;
   Settings: undefined;
+  NewPost: undefined;
+  Notification: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -71,8 +75,10 @@ function MainApp() {
           <Stack.Screen name="Home" component={HomeScreen}  options={{ headerShown: false }} />
         )}
 
+        <Stack.Screen name="NewPost" component={NewPostScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Notification" component={NotificationScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

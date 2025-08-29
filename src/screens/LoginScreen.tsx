@@ -45,8 +45,25 @@ const LoginScreen = () => {
           { text: 'OK', onPress: () => navigation.navigate('Home') },
         ]);
       } catch (err) {
-        console.error(err);
-        Alert.alert('OOPs! Login Failed');
+       let errorMessage = 'Something went wrong. Please try again later.';
+
+        if (
+          typeof err === 'object' &&
+          err !== null &&
+          'code' in err &&
+          typeof (err as any).code === 'string'
+        ) {
+          const errorCode = (err as any).code;
+
+          if (errorCode === 'auth/user-not-found') {
+            errorMessage = 'No user found with this email.';
+          } else if (errorCode === 'auth/wrong-password') {
+            errorMessage = 'Incorrect password.';
+          } else if (errorCode === 'auth/too-many-requests') {
+            errorMessage = 'Too many failed attempts. Try again later.';
+          }
+          Alert.alert('OOPs! Signup Failed', errorMessage);
+        }
       } finally {
         setSubmitting(false);
       }

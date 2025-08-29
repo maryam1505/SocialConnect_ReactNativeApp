@@ -8,6 +8,7 @@ import HomeNav from '../components/HomeNav';
 import { useTheme } from '../context/ThemeContext';
 import Feed from '../components/Feed';
 import FootNav from '../components/FootNav';
+import TopNav from '../components/TopNav';
 
 
 const HomeScreen = () => {
@@ -26,7 +27,7 @@ const HomeScreen = () => {
   });
   return (
     <>
-        <HomeNav/>
+      <TopNav/>
       <View style={[styles.container,{backgroundColor: appTheme.colors.background }]}>
         <Feed/>
       </View>
@@ -40,14 +41,6 @@ export default HomeScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
-  },
-  title: {
-    fontWeight: '500',
-    fontSize: 40,
-    lineHeight: 56,
-    letterSpacing: 0,
-    textAlign: 'center',
-    marginBottom: 40,
+    padding: 5,
   },
 });

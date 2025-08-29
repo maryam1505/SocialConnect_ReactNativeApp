@@ -2,15 +2,18 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import { useTheme } from '../context/ThemeContext';
 import BellIcon from '../../assets/icons/bell-filled.svg';
+import { RootStackParamList } from '../../App';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
 
 const HomeNav = () => {
   const { appTheme } = useTheme();
+  type ScreenNavigationProp<T extends keyof RootStackParamList> = NativeStackNavigationProp<RootStackParamList, T>;
+  const navigation = useNavigation<ScreenNavigationProp<'Notification'>>();
+
   return (
     <View style={styles.container}>
-      <Text>
-        <Text style={[styles.social, {color: appTheme.colors.primaryLight},]}>Social</Text>
-        <Text style={[styles.connect, { color: appTheme.colors.primaryDark, fontFamily: appTheme.fonts.medium.fontFamily },]}>Connect</Text>
-      </Text>
+      
       <TouchableOpacity>
         <BellIcon width={22} height={22}/>
       </TouchableOpacity>
@@ -23,28 +26,27 @@ export default HomeNav
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
     width:"100%",
     backgroundColor: "#fff",
     borderBottomLeftRadius: 12,
     borderBottomRightRadius: 12,
-    marginBottom: 20,
-    // 🔹 Shadow for iOS
+    marginBottom: 10,
+
+    /* Shadow for iOS and Android */
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-
-    // 🔹 Shadow for Android
     elevation: 3,
   },
   social: {
-    fontSize: 16,
+    fontSize: 18,
   },
   connect: {
-    fontSize: 18,
+    fontSize: 20,
   }
 });

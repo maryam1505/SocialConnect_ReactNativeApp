@@ -18,7 +18,7 @@ export const LightTheme : Theme = {
     colors: {
         primaryDark: "#200122",
         primaryLight: "#108DC7",
-        background: "#eee",
+        background: "#fff",
         textPrimary: "#000",
         textSecondary: "#919191",
         primaryBtn: "#200122"

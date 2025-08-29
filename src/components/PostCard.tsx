@@ -44,20 +44,24 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         </View>
       </View>
 
-      {/* Post Image */}
-      {post.imageUrl ? (
-        <Image
-          source={
-            typeof post.imageUrl === 'string'
-              ? { uri: post.imageUrl }
-              : post.imageUrl
-          }
-          style={styles.postImage}
-        />
-      ) : null}
-
       {/* Post Text */}
       {post.text ? <Text style={styles.text}>{post.text}</Text> : null}
+
+      {/* Post Image */}
+      {post.imageUrl ? (
+        <View style={styles.imageCard}> 
+          <Image
+            source={
+              typeof post.imageUrl === 'string'
+                ? { uri: post.imageUrl }
+                : post.imageUrl
+            }
+            style={styles.postImage}
+          />
+
+        </View>
+
+      ) : null}
 
       {/* Engagement Row */}
       <View style={styles.engagement}>
@@ -84,19 +88,16 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#fff',
     borderRadius: 10,
-    marginBottom: 15,
+    marginBottom: 10,
     padding: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
   },
   header: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
   name: { fontWeight: 'bold', fontSize: 16 },
   time: { color: 'gray', fontSize: 12 },
-  postImage: { width: '100%', height: 250, borderRadius: 10, marginBottom: 10 },
-  text: { fontSize: 14, color: '#333', marginBottom: 10 },
+  imageCard: {width:"100%", height: 400, marginTop: 5, marginBottom: 10, },
+  postImage: { width: '100%', height: "100%", borderRadius: 10, },
+  text: { fontSize: 14, color: '#333', marginTop: 10, marginBottom: 10, textAlign: "justify", paddingHorizontal: 10, },
   engagement: {
     flexDirection: 'row',
     justifyContent: 'space-around',
