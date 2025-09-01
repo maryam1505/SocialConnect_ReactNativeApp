@@ -1,12 +1,11 @@
 import {
-    ActivityIndicator,
+  ActivityIndicator,
   Alert,
   Image,
   StyleSheet,
   TextInput,
   View,
 } from 'react-native';
-import { Platform } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { supabase } from '../../supabase';
 import firestore from '@react-native-firebase/firestore';
@@ -16,13 +15,22 @@ import FootNav from '../components/FootNav';
 import TopNav from '../components/TopNav';
 import auth from '@react-native-firebase/auth';
 import PrimaryButton from '../components/PrimaryButton';
+import { RootStackParamList } from '../../App';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+
+type ScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'NewPost'
+>;
 
 const NewPostScreen = () => {
   const [text, setText] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
-    const { appTheme } = useTheme();
-  
+  const [loading, setLoading] = useState(false);
+  const { appTheme } = useTheme();
+
+  const navigation = useNavigation<ScreenNavigationProp>();
 
   /* ## Pick Image From Gallery ## */
   const pickImage = async () => {
@@ -32,9 +40,8 @@ const NewPostScreen = () => {
     }
   };
 
-  /* ## Upload Post and Save to Firebase Storage ## */
+  
   const handlePost = async () => {
-
     if (!imageUri && !text) {
       Alert.alert('Post cannot be empty');
       return;
@@ -43,40 +50,44 @@ const NewPostScreen = () => {
 
     const currentUser = auth().currentUser;
     if (!currentUser) {
-        Alert.alert('Error', 'No user is logged in.');
-        setLoading(false);
-        return;
+      Alert.alert('Error', 'No user is logged in.');
+      setLoading(false);
+      return;
     }
 
     let imageUrl: string | null = null;
     try {
+      /* ## Upload Image to Supabase Storage ## */
       if (imageUri) {
-         const fileName = `posts/${Date.now()}.jpg`;
+        const fileName = `posts/${Date.now()}.jpg`;
         const ext = imageUri.split('.').pop();
         const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
 
         const formData = new FormData();
-        formData.append('file',{
-            uri: imageUri,
-            name: fileName,
-            type: mimeType,
+        formData.append('file', {
+          uri: imageUri,
+          name: fileName,
+          type: mimeType,
         } as any);
 
-        const { error } = await supabase.storage.from('post-images').upload(fileName, formData as any, {
+        const { error } = await supabase.storage
+          .from('post-images')
+          .upload(fileName, formData as any, {
             contentType: mimeType,
             upsert: false,
-        });
+          });
 
         if (error) throw error;
 
         const { data } = supabase.storage
-        .from('post-images')
-        .getPublicUrl(fileName);
-        
+          .from('post-images')
+          .getPublicUrl(fileName);
+
         imageUrl = data.publicUrl;
       }
 
-      await firestore().collection('posts').add({
+      /* ## Upload Post and Save to Firebase Storage ## */
+      const postRef = await firestore().collection('posts').add({
         text,
         imageUrl,
         createdAt: firestore.FieldValue.serverTimestamp(),
@@ -86,9 +97,19 @@ const NewPostScreen = () => {
         userId: currentUser.uid,
       });
 
+      /* ## Update User Document ## */
+        await firestore()
+        .collection('users')
+        .doc(currentUser.uid)
+        .update({
+            totalPosts: firestore.FieldValue.increment(1),
+        });
+
       setText('');
       setImageUri(null);
+
       Alert.alert('Post uploaded successfully!');
+      navigation.navigate('Home');
     } catch (error: any) {
       Alert.alert('Error posting', error?.message || JSON.stringify(error));
     } finally {
@@ -119,8 +140,18 @@ const NewPostScreen = () => {
           <Image source={{ uri: imageUri }} style={styles.imagePreview} />
         )}
         <View style={styles.actions}>
-            <PrimaryButton onPress={pickImage} accessibilityLabel="Pick Image from Gallery" title='Pick Image' style={styles.actionBtn}/>
-            <PrimaryButton onPress={handlePost} title={loading ? 'Posting...' : 'Post'} accessibilityLabel="Posting a post" style={styles.actionBtn}/>
+          <PrimaryButton
+            onPress={pickImage}
+            accessibilityLabel="Pick Image from Gallery"
+            title="Pick Image"
+            style={styles.actionBtn}
+          />
+          <PrimaryButton
+            onPress={handlePost}
+            title={loading ? 'Posting...' : 'Post'}
+            accessibilityLabel="Posting a post"
+            style={styles.actionBtn}
+          />
         </View>
       </View>
       <FootNav />
@@ -166,13 +197,11 @@ const styles = StyleSheet.create({
   loaderContainer: {
     backgroundColor: '#eee',
     opacity: 0.5,
-    flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    width: '100%',
-    height: '100%',
+    flex: 1,
   },
   actionBtn: {
-    maxWidth: "50%"
+    maxWidth: '50%',
   },
 });

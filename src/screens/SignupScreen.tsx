@@ -13,12 +13,12 @@ import firestore from '@react-native-firebase/firestore';
 
 
 const SignupScreen = () => {
-  type OnBoardingScreenNavigationProp = NativeStackNavigationProp<
+  type SignUpScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,
     'Signup'
   >;
 
-  const navigation = useNavigation<OnBoardingScreenNavigationProp>();
+  const navigation = useNavigation<SignUpScreenNavigationProp>();
   const { appTheme } = useTheme(); 
 
   // Navigate to Login
@@ -32,9 +32,11 @@ const SignupScreen = () => {
       name: '',
       email: '',
       password: '',
+      username: '',
     },
     validationSchema: Yup.object({
       name: Yup.string().required('Required'),
+      username: Yup.string().matches(/^@[A-Za-z0-9_]+$/, 'Username must start with @ and contain only letters, numbers, or underscores').required('Required'),
       email: Yup.string().email('Invalid email address').required('Required'),
       password: Yup.string()
         .min(6, 'Must be at least 6 characters')
@@ -52,9 +54,10 @@ const SignupScreen = () => {
         await firestore().collection('users').doc(user.uid).set({
           userId: user.uid,
           name: values.name,
+          username: values.username,
           email: user.email,
           bio: "This is my Profile Bio",
-          imageUrl: null,                
+          imageUrl: null,
           totalPosts: 0,
           createdAt: firestore.FieldValue.serverTimestamp(),
           updatedAt: firestore.FieldValue.serverTimestamp(),
@@ -103,6 +106,14 @@ const SignupScreen = () => {
           onBlur={formik.handleBlur('name')}
           autoCapitalize="none"
           error={formik.touched.name ? formik.errors.name : ''}
+        />
+        <GradientInput
+          placeholder="@username"
+          value={formik.values.username}
+          onChangeText={formik.handleChange('username')}
+          onBlur={formik.handleBlur('username')}
+          autoCapitalize="none"
+          error={formik.touched.username ? formik.errors.username : ''}
         />
 
         {/* Email Input */}

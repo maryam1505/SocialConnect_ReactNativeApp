@@ -1,14 +1,16 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, { useCallback } from 'react';
-import BackIcon from '../../assets/icons/back.svg';
+import { BackHandler, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect } from 'react';
 import BellIcon from '../../assets/icons/bell-filled.svg';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
 import { useTheme } from '../context/ThemeContext';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import Header from './Header';
+import BackIcon from '../../assets/icons/back.svg';
+
 
 const TopNav = () => {
-    const { appTheme } = useTheme(); 
+    const { appTheme } = useTheme();
     const route = useRoute<RouteProp<RootStackParamList>>();
     
     type ScreenNavigationProp<T extends keyof RootStackParamList> = NativeStackNavigationProp<RootStackParamList, T>;
@@ -18,25 +20,103 @@ const TopNav = () => {
         navigation.navigate('Notification');
     }, [navigation]);
 
+    const handleSettings = useCallback(() => {
+        navigation.navigate('Settings');
+    }, [navigation]);
+
+    const backAction = useCallback(() => {
+        if (navigation.canGoBack()) {
+            navigation.goBack();
+            return true;
+        }
+        return false;
+    }, [navigation]);
+
     return (
         <View style={styles.container}>
-            {route.name === 'Home' ? (
-                <Text>
-        <Text style={[styles.social, {color: appTheme.colors.primaryLight, fontFamily: appTheme.fonts.light.fontFamily},]}>Social</Text>
-        <Text style={[styles.connect, { color: appTheme.colors.primaryDark, fontFamily: appTheme.fonts.medium.fontFamily },]}>Connect</Text>
-      </Text>
-            ) : (
-                <>
-                <TouchableOpacity>
-                    <BackIcon width={22} height={22}/>
-                </TouchableOpacity>
-                <Text style={[styles.title, {fontFamily: appTheme.fonts.medium.fontFamily, fontWeight: appTheme.fonts.medium.fontWeight}]}>{route.name === 'Profile'? 'Profile': 'New Post'}</Text>
-                </>
-
+            {route.name === 'Home' && (
+                <Header
+                    title={
+                    <>
+                        <Text
+                        style={[
+                            styles.social,
+                            {
+                            color: appTheme.colors.primaryLight,
+                            fontFamily: appTheme.fonts.light.fontFamily,
+                            },
+                        ]}
+                        >
+                        Social
+                        </Text>
+                        <Text
+                        style={[
+                            styles.connect,
+                            {
+                            color: appTheme.colors.primaryDark,
+                            fontFamily: appTheme.fonts.medium.fontFamily,
+                            },
+                        ]}
+                        >
+                        Connect
+                        </Text>
+                    </>
+                    }
+                    rightComponent={
+                    <TouchableOpacity onPress={handleBellIcon}>
+                        <BellIcon width={22} height={22} />
+                    </TouchableOpacity>
+                    }
+                    styles={styles}
+                    appTheme={appTheme}
+                />
             )}
-            <TouchableOpacity onPress={handleBellIcon}>
-                <BellIcon width={22} height={22}/>
-            </TouchableOpacity>
+
+            {route.name === 'Settings' && (
+                <> 
+                    <View style={styles.settingsTitle}> 
+                        <TouchableOpacity onPress={backAction}> 
+                            <BackIcon width={22} height={22}/> 
+                        </TouchableOpacity> 
+                        <Text style={[styles.title, {fontFamily: appTheme.fonts.medium.fontFamily, fontWeight: appTheme.fonts.medium.fontWeight}]}> Settings</Text> 
+                    </View> 
+                </>
+            )}
+
+            {route.name === 'Notification' && (
+                <> 
+                    <View style={styles.settingsTitle}> 
+                        <TouchableOpacity onPress={backAction}> 
+                            <BackIcon width={22} height={22}/> 
+                        </TouchableOpacity> 
+                        <Text style={[styles.title, {fontFamily: appTheme.fonts.medium.fontFamily, fontWeight: appTheme.fonts.medium.fontWeight}]}> Notifications</Text> 
+                    </View> 
+                </>
+            )}
+
+            {route.name === 'Profile' && (
+                <Header
+                    showBack
+                    title="Profile"
+                    onBack={backAction}
+                    showSettings
+                    onSettings={handleSettings}
+                    styles={styles}
+                    appTheme={appTheme}
+                />
+            )}
+
+            {route.name === 'NewPost' && (
+                <Header
+                    showBack
+                    title="New Post"
+                    onBack={backAction}
+                    showSettings
+                    onSettings={handleSettings}
+                    styles={styles}
+                    appTheme={appTheme}
+                />
+            )}
         </View>
     )
 }
@@ -66,9 +146,21 @@ const styles = StyleSheet.create({
         fontSize: 20,
     },
     social: {
-    fontSize: 18,
-  },
-  connect: {
-    fontSize: 20,
-  }
+        fontSize: 18,
+    },
+    connect: {
+        fontSize: 20,
+    },
+    settingsTitle: {
+        flexDirection: "row",
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: "60%",
+    },
+    ContainerBox: {
+        flexDirection: "row",
+        alignItems:'center',
+        justifyContent: 'space-between',
+        width: "100%",
+    }
 });

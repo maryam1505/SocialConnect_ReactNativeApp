@@ -4,7 +4,6 @@ import {
   View,
 } from 'react-native';
 import React, { useEffect } from 'react';
-import HomeNav from '../components/HomeNav';
 import { useTheme } from '../context/ThemeContext';
 import Feed from '../components/Feed';
 import FootNav from '../components/FootNav';
