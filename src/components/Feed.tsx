@@ -5,11 +5,12 @@ import { collection, doc, getDoc, getFirestore, onSnapshot, orderBy, query, wher
 import { useTheme } from '../context/ThemeContext';
 import { getApp } from '@react-native-firebase/app';
 import { getAuth } from '@react-native-firebase/auth';
-import { useRoute } from '@react-navigation/native';
 
+type FeedProps = {
+  deepLinkPostId?: string;
+};
 
-
-const Feed: React.FC = () => {
+const Feed: React.FC<FeedProps> = ({ deepLinkPostId }) => {
   const { appTheme } = useTheme();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,8 +21,6 @@ const Feed: React.FC = () => {
 
   const db = getFirestore(app);
 
-  const route = useRoute();
-  const deepLinkPostId = (route.params as any)?.id;
 
 /* ## Fetching Posts Except the current User ## */
   useEffect(() => {

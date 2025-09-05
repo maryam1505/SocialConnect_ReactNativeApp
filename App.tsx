@@ -47,8 +47,7 @@ const linking = {
   prefixes: ["socialconnect://"], 
   config: {
     screens: {
-      Home: "home",
-      Post: "post/:id", 
+      Home: "post/:id",
     },
   },
 };

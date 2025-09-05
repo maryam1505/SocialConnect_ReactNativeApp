@@ -166,7 +166,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         shares: increment(1),
       });
       await Share.share({
-        message: `${post.text ?? 'Check out this post!'}\n\n${url}\n\nShared via MyApp--SocialConnect`,
+        message: `${post.text ?? 'Check out this post!'}\n\n${url}\n\nShared via SocialConnect`,
         url: url,
       });
     } catch (error) {

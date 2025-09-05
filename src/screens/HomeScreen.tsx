@@ -8,9 +8,13 @@ import { useTheme } from '../context/ThemeContext';
 import Feed from '../components/Feed';
 import FootNav from '../components/FootNav';
 import TopNav from '../components/TopNav';
+import { useRoute } from '@react-navigation/native';
+
 
 
 const HomeScreen = () => {
+  const route = useRoute();
+  const deepLinkPostId = (route.params as any)?.id;
   const { appTheme } = useTheme(); 
   useEffect(() => {
     const backAction = () => {
@@ -28,7 +32,7 @@ const HomeScreen = () => {
     <>
       <TopNav/>
       <View style={[styles.container,{backgroundColor: appTheme.colors.background }]}>
-        <Feed/>
+        <Feed deepLinkPostId={deepLinkPostId} />
       </View>
       <FootNav/>
     </>
