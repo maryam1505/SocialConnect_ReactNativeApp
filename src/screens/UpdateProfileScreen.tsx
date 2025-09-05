@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   /* ## Form Container Styling ## */
   container: {
     flex: 1,
-    padding: 10,
+    padding: 20,
   },
   textarea: {
     height: 100,

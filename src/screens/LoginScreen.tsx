@@ -3,7 +3,7 @@ import React, { useCallback} from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { getApp } from '@react-native-firebase/app';
-import { getAuth} from '@react-native-firebase/auth';
+import { getAuth, sendPasswordResetEmail, signInWithEmailAndPassword} from '@react-native-firebase/auth';
 import PrimaryButton from '../components/PrimaryButton';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -12,15 +12,18 @@ import GradientInput from '../components/GradientInput';
 import { useTheme } from '../context/ThemeContext';
 
 
-const LoginScreen = () => {
-  type OnBoardingScreenNavigationProp = NativeStackNavigationProp<
-    RootStackParamList,
-    'Login'
-  >;
+type OnBoardingScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'Login'
+>;
 
+
+const LoginScreen = () => {
   const navigation = useNavigation<OnBoardingScreenNavigationProp>();
 
   const { appTheme } = useTheme(); 
+  const app = getApp();
+  const auth = getAuth(app);
 
   // Navigate to Sign Up
   const handlePress = useCallback(() => {
@@ -41,12 +44,13 @@ const LoginScreen = () => {
     }),
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        await getAuth(getApp()).signInWithEmailAndPassword(values.email, values.password);
+        await signInWithEmailAndPassword(auth, values.email, values.password);
+
         Alert.alert('Success', 'You are Logged in Successfully', [
           { text: 'OK', onPress: () => navigation.navigate('Home') },
         ]);
       } catch (err) {
-       let errorMessage = 'Something went wrong. Please try again later.';
+      let errorMessage = 'Something went wrong. Please try again later.';
 
         if (
           typeof err === 'object' &&
@@ -63,7 +67,7 @@ const LoginScreen = () => {
           } else if (errorCode === 'auth/too-many-requests') {
             errorMessage = 'Too many failed attempts. Try again later.';
           }
-          Alert.alert('OOPs! Signup Failed', errorMessage);
+          Alert.alert('OOPs! Login Failed', errorMessage);
         }
       } finally {
         setSubmitting(false);
@@ -78,7 +82,7 @@ const LoginScreen = () => {
       return;
     }
     try {
-      await getAuth(getApp()).sendPasswordResetEmail(formik.values.email);
+      await sendPasswordResetEmail(auth, formik.values.email);
       Alert.alert('Password Reset', 'Check your email for reset link.');
     } catch (error) {
       Alert.alert('Somethings wrong!');

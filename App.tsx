@@ -1,18 +1,25 @@
-import LoginScreen from './src/screens/LoginScreen';
-import OnBoardingScreen from './src/screens/OnBoardingScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import SignupScreen from './src/screens/SignupScreen';
-import HomeScreen from './src/screens/HomeScreen';
-import ProfileScreen from './src/screens/ProfileScreen';
-import SettingsScreen from './src/screens/SettingsScreen';
 import { useEffect, useState } from 'react';
 import { FirebaseAuthTypes} from '@react-native-firebase/auth';
 import { getApp } from '@react-native-firebase/app';
 import { getAuth, onAuthStateChanged } from '@react-native-firebase/auth';
+import { ThemeProvider, useTheme } from "./src/context/ThemeContext";
+import messaging from '@react-native-firebase/messaging';
+import { doc, getFirestore, setDoc } from '@react-native-firebase/firestore';
+import { Alert } from 'react-native';
 import { checkOnboardingSeen } from './src/utils/storage';
 import Loader from './src/components/Loader';
-import { ThemeProvider, useTheme } from "./src/context/ThemeContext";
+import { createNavigationContainerRef } from '@react-navigation/native';
+import { Linking } from "react-native";
+
+/* ## Screens ## */
+import LoginScreen from './src/screens/LoginScreen';
+import OnBoardingScreen from './src/screens/OnBoardingScreen';
+import SignupScreen from './src/screens/SignupScreen';
+import HomeScreen from './src/screens/HomeScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
 import NewPostScreen from './src/screens/NewPostScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
 import UpdateProfileScreen from './src/screens/UpdateProfileScreen';
@@ -34,6 +41,18 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+export const navigationRef = createNavigationContainerRef<RootStackParamList>();
+
+const linking = {
+  prefixes: ["socialconnect://"], 
+  config: {
+    screens: {
+      Home: "home",
+      Post: "post/:id", 
+    },
+  },
+};
+
 function MainApp() {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
@@ -41,18 +60,79 @@ function MainApp() {
   const { navigationTheme } = useTheme();
 
   const app = getApp();
-
   const auth = getAuth(app);
-  
-  /* ## Check If the User is Logged In ## */
+  const db = getFirestore(app);
+
+  /* ## Save FCM Token and Request Permission ## */
+  const requestPermissionAndSaveToken = async () => {
+    try {
+      /* ## Request permission (iOS) ## */
+      await messaging().requestPermission();
+
+      /* ## Get FCM token ## */
+      const token = await messaging().getToken();
+
+      const user = getAuth().currentUser;
+      if (!user) return;
+
+      const userRef = doc(db, 'users', user.uid);
+
+      /* ## Save/merge the token ## */
+      await setDoc(userRef, { fcmToken: token }, { merge: true });
+    } catch (err) {
+      console.error("Error saving FCM token:", err);
+    }
+  };
+
+  /* ## Foreground Notifications ## */
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      Alert.alert(remoteMessage.notification?.title ?? 'New Alert', remoteMessage.notification?. body ?? '');
+
+      if(user) {
+        const ntfRef = doc(db, 'users', user.uid, 'notifications', Date.now().toString());
+        await setDoc(ntfRef,  {
+          title: remoteMessage.notification?.title ?? 'New Alert',
+          body: remoteMessage.notification?. body ?? '',
+          createdAt: new Date(),
+  
+        });
+      }
+    });
+    return unsubscribe;
+  }, [user]);
+
+/* ## Saving Token on Login (Auth State) ## */
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
+      if(user) await requestPermissionAndSaveToken();
       if (initializing) setInitializing(false);
-  });
+    });
 
     return unsubscribe;
   }, []);
+
+  /* ## Background or Quite Notifications ## */
+  useEffect(() => {
+    
+  // When app opened from background
+  const unsubscribe = messaging().onNotificationOpenedApp(remoteMessage => {
+    if (remoteMessage?.data?.screen && navigationRef.isReady()) {
+      navigationRef.current?.navigate(remoteMessage.data.screen as keyof RootStackParamList);
+    }
+  });
+
+  // When app opened from quit
+  messaging().getInitialNotification().then(remoteMessage => {
+    if (remoteMessage?.data?.screen && navigationRef.isReady()) {
+      navigationRef.current?.navigate(remoteMessage.data.screen as keyof RootStackParamList);
+    }
+  });
+
+  return unsubscribe;
+}, []);
+  
 
   /* ## If the User is Logged In ## */
   useEffect(() => {
@@ -62,7 +142,7 @@ function MainApp() {
   if (initializing) return <Loader />;
 
   return (
-    <NavigationContainer theme={navigationTheme}>
+    <NavigationContainer theme={navigationTheme} fallback={<Loader/>} linking={linking}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!onboardingSeen && !user && (
           <Stack.Screen name="OnBoarding" component={OnBoardingScreen} />

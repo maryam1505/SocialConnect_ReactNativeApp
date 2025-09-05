@@ -1,7 +1,7 @@
 import { ActivityIndicator, Alert, Image, StyleSheet, TextInput, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { supabase } from '../../supabase';
-import { addDoc, doc, getFirestore, increment, serverTimestamp, updateDoc } from '@react-native-firebase/firestore';
+import { addDoc, collection, doc, getFirestore, increment, serverTimestamp, updateDoc } from '@react-native-firebase/firestore';
 import React, { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import FootNav from '../components/FootNav';
@@ -26,8 +26,8 @@ const NewPostScreen = () => {
 
   const app = getApp();
    
-
   const navigation = useNavigation<ScreenNavigationProp>();
+
 
   /* ## Pick Image From Gallery ## */
   const pickImage = async () => {
@@ -90,7 +90,7 @@ const NewPostScreen = () => {
 
       /* ## Upload Post and Save to Firebase Storage ## */
       const db = getFirestore(app);
-      const postRef = doc(db, 'posts');
+      const postRef = collection(db, 'posts');
       await addDoc(postRef, {
         text,
         imageUrl,

@@ -5,6 +5,7 @@ import { collection, doc, getDoc, getFirestore, onSnapshot, orderBy, query, wher
 import { useTheme } from '../context/ThemeContext';
 import { getApp } from '@react-native-firebase/app';
 import { getAuth } from '@react-native-firebase/auth';
+import { useRoute } from '@react-navigation/native';
 
 
 
@@ -12,11 +13,15 @@ const Feed: React.FC = () => {
   const { appTheme } = useTheme();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [highlightPost, setHighlightPost] = useState<Post | null>(null);
 
   const app = getApp();
   const currentUserId = getAuth(app).currentUser?.uid;
 
   const db = getFirestore(app);
+
+  const route = useRoute();
+  const deepLinkPostId = (route.params as any)?.id;
 
 /* ## Fetching Posts Except the current User ## */
   useEffect(() => {
@@ -65,7 +70,17 @@ const Feed: React.FC = () => {
         };
       });
 
-      setPosts(fetchedPosts);
+      let highlight: Post | null = null;
+      let rest: Post[] = fetchedPosts;
+
+      if (deepLinkPostId) {
+        highlight = fetchedPosts.find(p => p.id === deepLinkPostId) ?? null;
+        rest = fetchedPosts.filter(p => p.id !== deepLinkPostId);
+      }
+      rest = rest.sort(() => Math.random() - 0.5);
+
+      setHighlightPost(highlight);
+      setPosts(rest);
       setLoading(false);
     });
 
@@ -81,20 +96,14 @@ const Feed: React.FC = () => {
     );
   }
 
-/* ## Error message if no post ## */
-  if (posts.length === 0) {
-    return (
-      <View style={styles.empty}>
-        <Text>No posts yet. Be the first to post!</Text>
-      </View>
-    );
-  }
-
   return (
     <FlatList
-      data={posts}
+      data={highlightPost ? [highlightPost, ...posts] : posts}
       keyExtractor={item => item.id}
       renderItem={({ item }) => <PostCard post={item} />}
+      ListEmptyComponent={<View style={styles.empty}>
+        <Text>No posts yet. Be the first to post!</Text>
+      </View>}
     />
   );
 };

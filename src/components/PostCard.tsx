@@ -1,4 +1,4 @@
-import { FlatList, Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import { formatDistanceToNow } from 'date-fns';
@@ -8,6 +8,7 @@ import { getAuth } from '@react-native-firebase/auth';
 import { collection, doc, getFirestore, increment, onSnapshot, orderBy, query, runTransaction, serverTimestamp, updateDoc } from '@react-native-firebase/firestore';
 import SendIcon from '../../assets/icons/send.svg';
 import CloseIcon from '../../assets/icons/close.svg';
+import { Share } from 'react-native';
 
 export interface Post {
   id: string;
@@ -84,7 +85,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     if (!userId) return;
 
     const likeRef = doc(db, 'posts', post.id, 'likes', userId);
-    const postRef = collection(db, 'posts', postId);
+    const postRef = doc(db, 'posts', postId);
 
     if(isLiked) {
       /* ## Unlike Post ## */
@@ -139,8 +140,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     if (!userId || !commentText.trim()) return;
     const user = getAuth(app).currentUser;
 
-    const commentRef = collection(db, 'posts', post.id, 'comments').getDoc();
-    const postRef = collection(db, 'posts',post.id);
+    const commentRef = doc(db, 'posts', post.id, 'comments');
+    const postRef = doc(db, 'posts',post.id);
 
     await runTransaction(db, async transaction => {
       transaction.set(commentRef, {
@@ -157,17 +158,21 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   /* -------------------------------- ## Handling Shares ## -------------------------------- */
 
   /* ## Share Post System ## */
-  const sharePost = async() => {
-    const postRef = collection(db, 'posts', post.id);
-    updateDoc(postRef, {
-      shares: increment(1),
-    });
-    import('react-native').then(({ Share }) => {
-      Share.share({
-        message: post.text ?? 'Check out this post!',
-        url: typeof post.imageUrl === 'string' ? post.imageUrl : undefined,
+  const sharePost = async (postId: any) => {
+    try {
+      const postRef = doc(db, 'posts', postId);
+      const url = `socialconnect://post/${postId}`;
+      await updateDoc(postRef, {
+        shares: increment(1),
       });
-    });
+      await Share.share({
+        message: `${post.text ?? 'Check out this post!'}\n\n${url}\n\nShared via MyApp--SocialConnect`,
+        url: url,
+      });
+    } catch (error) {
+      Alert.alert("Error", "Unable to share the post right now.");
+      console.error("Share error:", error);
+    }
   }
 
   /* ## Fetch Realtime Share Counts ## */
@@ -254,7 +259,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         </TouchableOpacity>
 
         {/* ## Share ## */}
-        <TouchableOpacity style={styles.engageItem} onPress={sharePost}>
+        <TouchableOpacity style={styles.engageItem} onPress={() => sharePost(post.id)}>
           <Ionicons name="share-social-outline" size={20} color="#444" />
           <Text style={styles.engageText}>{sharesCount}</Text>
         </TouchableOpacity>
