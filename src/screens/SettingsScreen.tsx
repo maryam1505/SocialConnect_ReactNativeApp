@@ -2,11 +2,11 @@ import { Alert, FlatList, ListRenderItem, StyleSheet, Text, TouchableOpacity, Vi
 import React from 'react'
 import { useTheme } from '../context/ThemeContext';
 import TopNav from '../components/TopNav';
-import PrimaryButton from '../components/PrimaryButton';
-import auth from '@react-native-firebase/auth';
+import { getApp } from '@react-native-firebase/app';
+import { getAuth} from '@react-native-firebase/auth';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
-import { CommonActions, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
 type MenuItem = {
   id: string;
@@ -14,29 +14,28 @@ type MenuItem = {
   action: () => void;
 };
 
+type SettingsScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'Settings'
+>;
+
 const SettingsScreen = () => {
-  type SettingsScreenNavigationProp = NativeStackNavigationProp<
-      RootStackParamList,
-      'Settings'
-    >;
   
   const navigation = useNavigation<SettingsScreenNavigationProp>();
 
+  /* ## Handle Logout Function ## */
   const handleLogOut = async () => {
     try {
-      await auth().signOut();
-      Alert.alert("Logged Out", "You have been signed Out");
-      navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: 'Login' }],
-      }),
-    );
+      await getAuth(getApp()).signOut();
+      Alert.alert("Logged Out", "You have been signed Out", [
+          { text: 'OK', onPress: () => navigation.reset({index: 0, routes:[{name: 'Login'},]}) },
+        ]);
     } catch (error: any) {
       Alert.alert('Error Logout',error.message);
     }
   };
 
+  /* ## Screen Menu List ## */
   const menuItems: MenuItem[] =[
     {
       id: "1",
@@ -55,6 +54,7 @@ const SettingsScreen = () => {
     },
   ];
 
+  /* ## Render Item ## */
   const renderItem: ListRenderItem<MenuItem> = ({ item }) => (
     <TouchableOpacity style={styles.item} onPress={item.action}>
       <Text style={styles.text}>{item.title}</Text>
@@ -86,7 +86,11 @@ const SettingsScreen = () => {
 export default SettingsScreen
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" , width: "100%",},
+  container: { 
+    flex: 1, 
+    backgroundColor: "#fff" , 
+    width: "100%",
+  },
   item: {
     padding: 16,
   },

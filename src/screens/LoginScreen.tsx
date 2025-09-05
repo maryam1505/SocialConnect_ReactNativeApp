@@ -2,7 +2,8 @@ import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useCallback} from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import auth from '@react-native-firebase/auth';
+import { getApp } from '@react-native-firebase/app';
+import { getAuth} from '@react-native-firebase/auth';
 import PrimaryButton from '../components/PrimaryButton';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -40,7 +41,7 @@ const LoginScreen = () => {
     }),
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        await auth().signInWithEmailAndPassword(values.email, values.password);
+        await getAuth(getApp()).signInWithEmailAndPassword(values.email, values.password);
         Alert.alert('Success', 'You are Logged in Successfully', [
           { text: 'OK', onPress: () => navigation.navigate('Home') },
         ]);
@@ -77,7 +78,7 @@ const LoginScreen = () => {
       return;
     }
     try {
-      await auth().sendPasswordResetEmail(formik.values.email);
+      await getAuth(getApp()).sendPasswordResetEmail(formik.values.email);
       Alert.alert('Password Reset', 'Check your email for reset link.');
     } catch (error) {
       Alert.alert('Somethings wrong!');
@@ -88,6 +89,7 @@ const LoginScreen = () => {
     <View style={[styles.container, { backgroundColor: appTheme.colors.background },]}>
       <Text style={[ styles.title, { color: appTheme.colors.textPrimary, fontFamily: appTheme.fonts.bold.fontFamily }, ]}>Sign In</Text>
       <View style={styles.formContainer}>
+
         {/* Email Input */}
         <GradientInput
           placeholder="Enter your Email"
@@ -114,6 +116,7 @@ const LoginScreen = () => {
           <Text style={[ styles.forgotPassword, { color: appTheme.colors.primaryLight }, ]}>Forgot your password?</Text>
         </TouchableOpacity>
 
+        {/* Sign In Button */}
         <PrimaryButton
           title={formik.isSubmitting ? 'Signing in...' : 'Sign In'}
           onPress={formik.handleSubmit}

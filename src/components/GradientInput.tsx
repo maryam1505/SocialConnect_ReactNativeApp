@@ -1,12 +1,5 @@
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TextInputProps,
-  View,
-} from 'react-native';
+import { StyleSheet, Text, TextInput, TextInputProps, View, } from 'react-native';
 import React, { useState } from 'react';
-import LinearGradient from 'react-native-linear-gradient';
 
 interface GradientInputProps extends TextInputProps {
   error?: string;

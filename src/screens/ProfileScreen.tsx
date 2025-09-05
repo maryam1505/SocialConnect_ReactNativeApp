@@ -1,51 +1,79 @@
-import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Image, StyleSheet, Text, View, } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import FootNav from '../components/FootNav';
 import TopNav from '../components/TopNav';
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
+import { getApp } from '@react-native-firebase/app';
+import { getAuth } from '@react-native-firebase/auth';
+import { collection, doc, getFirestore, onSnapshot, query, where } from '@react-native-firebase/firestore';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../App';
+import { useNavigation } from '@react-navigation/native';
+import PrimaryButton from '../components/PrimaryButton';
 
 type UserProfile = {
   name?: string;
   email?: string;
   bio?: string;
-  userAvatar?: string;
+  avatar?: string;
   totalPosts?: number;
 };
 
+type ScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'Profile'
+>;
+
 const ProfileScreen = () => {
   const { appTheme } = useTheme();
-  const currentUser = auth().currentUser;
+  const currentUser = getAuth(getApp()).currentUser;
+
+  const navigation = useNavigation<ScreenNavigationProp>();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const app = getApp();
+  const db = getFirestore(app);
 
   useEffect(() => {
     if (!currentUser) {
       Alert.alert('Error', 'No user is logged in.');
       setLoading(false);
+      navigation.navigate('Login');
       return;
     }
 
-    const unsubscribe = firestore()
-      .collection('users')
-      .doc(currentUser.uid)
-      .onSnapshot(doc => {
-        if (doc.exists()) {
-          setProfile(doc.data() as UserProfile);
+    const userRef = doc(db, 'users' , currentUser.uid);
+    const unsubscribe = onSnapshot(userRef, docSnap => {
+        if (docSnap.exists()) {
+          setProfile(docSnap.data() as UserProfile);
         } else {
           setProfile(null);
         }
         setLoading(false);
       });
+    return () => unsubscribe();
+  }, [currentUser]);
+
+  const handleUpdateProfile = useCallback(()=>{
+    navigation.navigate('UpdateProfile');
+  }, [navigation]); 
+
+  /* ## Manually Count the totalPosts of Current User ## */
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const postRef = collection(db, 'posts');
+    const q = query(postRef, where('userId', '==', currentUser.uid));
+    const unsubscribe = onSnapshot(q, snapshot => {
+        setProfile(prev => ({
+          ...prev,
+          totalPosts: snapshot.size, 
+        }));
+      });
+
     return () => unsubscribe();
   }, [currentUser]);
 
@@ -63,10 +91,9 @@ const ProfileScreen = () => {
       <View style={styles.container}>
         {profile ? (
           <View style={styles.profileBox}>
-            {profile.userAvatar ? (
-              <Image source={{ uri: profile.userAvatar }} style={styles.avatar} />
+            {profile.avatar ? (
+              <Image source={{ uri: profile.avatar }} style={styles.avatar} />
             ) : (
-              // <Image source={require('../../assets/images/profile-placeholder.jpg')} style={styles.avatar} />
               <View style={[styles.avatar, { backgroundColor: '#ccc' }]} />
             )}
             <Text style={styles.name}>{profile.name}</Text>
@@ -76,12 +103,16 @@ const ProfileScreen = () => {
           </View>
         ) : (
           <View style={{flexDirection: 'column', alignItems: 'center'}}>
-            <Image source={require('../../assets/images/profile-placeholder.jpg')} style={styles.avatar} />
+            <View style={[styles.avatar, { backgroundColor: '#ccc' }]} />
+            {/* <Image source={require('../../assets/images/profile-placeholder.jpg')} style={styles.avatar} /> */}
             <Text style={styles.name}>Unknown User</Text>
             <Text style={styles.name}>{currentUser?.uid}</Text>
             <Text style={styles.email}>No email available</Text>
           </View>
         )}
+        <View>
+          <PrimaryButton onPress={handleUpdateProfile} title='Update Profile'/>
+        </View>
       </View>
 
       <FootNav />
@@ -95,6 +126,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
+    justifyContent: 'space-between',
   },
   title: {
     fontSize: 18,

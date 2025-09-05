@@ -2,24 +2,28 @@ import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useCallback } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import auth from '@react-native-firebase/auth';
+import { getApp } from '@react-native-firebase/app';
+import { getAuth} from '@react-native-firebase/auth';
 import PrimaryButton from '../components/PrimaryButton';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import GradientInput from '../components/GradientInput';
 import { useTheme } from '../context/ThemeContext';
-import firestore from '@react-native-firebase/firestore';
+import { collection, getFirestore, serverTimestamp, setDoc } from '@react-native-firebase/firestore';
 
 
+type SignUpScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'Signup'
+>;
 const SignupScreen = () => {
-  type SignUpScreenNavigationProp = NativeStackNavigationProp<
-    RootStackParamList,
-    'Signup'
-  >;
 
   const navigation = useNavigation<SignUpScreenNavigationProp>();
-  const { appTheme } = useTheme(); 
+  const { appTheme } = useTheme();
+
+  const app = getApp();
+  const db = getFirestore(app);
 
   // Navigate to Login
   const handlePress = useCallback(() => {
@@ -44,23 +48,24 @@ const SignupScreen = () => {
     }),
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        const userCredential = await auth().createUserWithEmailAndPassword(
+        const userCredential = await getAuth(app).createUserWithEmailAndPassword(
           values.email,
           values.password,
         );
         const user = userCredential.user;
 
         await user.updateProfile({ displayName: values.name });
-        await firestore().collection('users').doc(user.uid).set({
+        const userRef = collection(db, 'users', user.uid);
+        await setDoc(userRef, {
           userId: user.uid,
           name: values.name,
           username: values.username,
           email: user.email,
           bio: "This is my Profile Bio",
-          imageUrl: null,
+          avatar: null,
           totalPosts: 0,
-          createdAt: firestore.FieldValue.serverTimestamp(),
-          updatedAt: firestore.FieldValue.serverTimestamp(),
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
         });
         Alert.alert('Success', 'Account created successfully', [
           { text: 'OK', onPress: () => navigation.navigate('Home') },
@@ -98,6 +103,7 @@ const SignupScreen = () => {
     <View style={[styles.container, { backgroundColor: appTheme.colors.background },]}>
       <Text style={[ styles.title, { color: appTheme.colors.textPrimary, fontFamily: appTheme.fonts.bold.fontFamily }, ]}>Sign Up</Text>
       <View style={styles.formContainer}>
+
         {/* Name Input */}
         <GradientInput
           placeholder="Enter your name"
@@ -107,6 +113,8 @@ const SignupScreen = () => {
           autoCapitalize="none"
           error={formik.touched.name ? formik.errors.name : ''}
         />
+
+        {/* Username Input */}
         <GradientInput
           placeholder="@username"
           value={formik.values.username}
@@ -137,6 +145,7 @@ const SignupScreen = () => {
           error={formik.touched.password ? formik.errors.password : ''}
         />
 
+        {/* Signup button */}
         <PrimaryButton
           title={formik.isSubmitting ? 'Signing Up...' : 'Sign Up'}
           onPress={formik.handleSubmit}

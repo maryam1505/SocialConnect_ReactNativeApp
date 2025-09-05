@@ -31,8 +31,7 @@ const OnBoardingScreen = () => {
       <View style={styles.content}>
         <Text style={[ styles.title, { color: appTheme.colors.textPrimary, fontFamily: appTheme.fonts.bold.fontFamily }, ]}>Let’s connect {'\n'}with each other</Text>
         <Text style={[styles.subtitle, { color: appTheme.colors.textSecondary }]}>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod
+          React native app using firebase authentication for better backend experience.
         </Text>
         <PrimaryButton
           title="Get Started"

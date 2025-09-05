@@ -1,49 +1,55 @@
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import PostCard, { Post } from './PostCard';
-import firestore from '@react-native-firebase/firestore';
+import { collection, doc, getDoc, getFirestore, onSnapshot, orderBy, query, where } from '@react-native-firebase/firestore';
 import { useTheme } from '../context/ThemeContext';
-import auth from '@react-native-firebase/auth';
+import { getApp } from '@react-native-firebase/app';
+import { getAuth } from '@react-native-firebase/auth';
+
 
 
 const Feed: React.FC = () => {
   const { appTheme } = useTheme();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const currentUserId = auth().currentUser?.uid;
 
+  const app = getApp();
+  const currentUserId = getAuth(app).currentUser?.uid;
+
+  const db = getFirestore(app);
+
+/* ## Fetching Posts Except the current User ## */
   useEffect(() => {
 
-    const unsubscribe = firestore()
-    .collection('posts')
-    .where("userId", "!=", currentUserId)
-    .orderBy('userId')
-    .orderBy('createdAt', 'desc')
-    .onSnapshot(async snapshot => {
+    const postRef = collection(db, 'posts');
+    const q = query(postRef, where("userId", "!=", currentUserId), orderBy('userId'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, async snap => {
 
-      if (snapshot.empty) {
+      if (snap.empty) {
         setPosts([]); 
         setLoading(false);
         return;
       }
       
-      const rawPosts = snapshot.docs.map((doc)=> ({
-        id: doc.id,
-        ...doc.data(),
+      const rawPosts = snap.docs.map((docSnap : any) => ({
+        id: docSnap.id,
+        ...(docSnap.data() as Omit<Post, "id">),
       }));
 
-      const userIds = Array.from(new Set(rawPosts.map((p: any) => p.userId)));
+      const userIds: string[] = Array.from(
+        new Set(rawPosts.map((p: any) => p.userId as string))
+      );
 
       const userDocs = await Promise.all(
-        userIds.map((uid)=> firestore().collection('users').doc(uid).get())
+        userIds.map((uid: string) => getDoc(doc(db, 'users', uid)))
       );
 
       const userCache: Record<string, any> = {};
-      userDocs.forEach((doc)=>{
-        if (doc.exists()) userCache[doc.id] = doc.data(); 
+      userDocs.forEach(userSnap =>{
+        if (userSnap.exists()) userCache[userSnap.id] = userSnap.data(); 
       });
 
-      const fetchedPosts: Post[] = rawPosts.map((post:any) => {
+      const fetchedPosts: Post[] = rawPosts.map((post: any) => {
         const user = userCache[post.userId];
         return {
           id: post.id,
@@ -55,7 +61,7 @@ const Feed: React.FC = () => {
           createdAt: post.createdAt,
           name: user?.name ?? "Unknown",
           username: user?.username ?? "@unknown",
-          userAvatar: user?.avatar ?? null,
+          avatar: user?.avatar ?? null,
         };
       });
 
@@ -75,7 +81,7 @@ const Feed: React.FC = () => {
     );
   }
 
-
+/* ## Error message if no post ## */
   if (posts.length === 0) {
     return (
       <View style={styles.empty}>

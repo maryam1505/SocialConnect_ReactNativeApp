@@ -1,19 +1,13 @@
-import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  StyleSheet,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Alert, Image, StyleSheet, TextInput, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { supabase } from '../../supabase';
-import firestore from '@react-native-firebase/firestore';
+import { addDoc, doc, getFirestore, increment, serverTimestamp, updateDoc } from '@react-native-firebase/firestore';
 import React, { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import FootNav from '../components/FootNav';
 import TopNav from '../components/TopNav';
-import auth from '@react-native-firebase/auth';
+import { getApp } from '@react-native-firebase/app';
+import { getAuth } from '@react-native-firebase/auth';
 import PrimaryButton from '../components/PrimaryButton';
 import { RootStackParamList } from '../../App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -30,6 +24,9 @@ const NewPostScreen = () => {
   const [loading, setLoading] = useState(false);
   const { appTheme } = useTheme();
 
+  const app = getApp();
+   
+
   const navigation = useNavigation<ScreenNavigationProp>();
 
   /* ## Pick Image From Gallery ## */
@@ -40,15 +37,18 @@ const NewPostScreen = () => {
     }
   };
 
-  
+   /* ## ------- Upload Image to supabase and Post to Firebase Database ------- ## */
   const handlePost = async () => {
+
     if (!imageUri && !text) {
       Alert.alert('Post cannot be empty');
       return;
     }
+
     setLoading(true);
 
-    const currentUser = auth().currentUser;
+    const currentUser = getAuth(app).currentUser;
+
     if (!currentUser) {
       Alert.alert('Error', 'No user is logged in.');
       setLoading(false);
@@ -56,7 +56,9 @@ const NewPostScreen = () => {
     }
 
     let imageUrl: string | null = null;
+
     try {
+
       /* ## Upload Image to Supabase Storage ## */
       if (imageUri) {
         const fileName = `posts/${Date.now()}.jpg`;
@@ -87,10 +89,12 @@ const NewPostScreen = () => {
       }
 
       /* ## Upload Post and Save to Firebase Storage ## */
-      const postRef = await firestore().collection('posts').add({
+      const db = getFirestore(app);
+      const postRef = doc(db, 'posts');
+      await addDoc(postRef, {
         text,
         imageUrl,
-        createdAt: firestore.FieldValue.serverTimestamp(),
+        createdAt: serverTimestamp(),
         shares: 0,
         likes: 0,
         comments: 0,
@@ -98,11 +102,9 @@ const NewPostScreen = () => {
       });
 
       /* ## Update User Document ## */
-        await firestore()
-        .collection('users')
-        .doc(currentUser.uid)
-        .update({
-            totalPosts: firestore.FieldValue.increment(1),
+      const userRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userRef, {
+            totalPosts: increment(1),
         });
 
       setText('');
@@ -128,6 +130,7 @@ const NewPostScreen = () => {
   return (
     <>
       <TopNav />
+      {/* ## Screen's  Main Container ## */}
       <View style={styles.container}>
         <TextInput
           style={styles.input}
@@ -139,6 +142,8 @@ const NewPostScreen = () => {
         {imageUri && (
           <Image source={{ uri: imageUri }} style={styles.imagePreview} />
         )}
+
+        {/* ## Action Buttons ## */}
         <View style={styles.actions}>
           <PrimaryButton
             onPress={pickImage}
@@ -185,6 +190,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 15,
   },
+  actionBtn: {
+    maxWidth: '50%',
+  },
   button: {
     backgroundColor: 'blue',
     padding: 12,
@@ -200,8 +208,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
-  },
-  actionBtn: {
-    maxWidth: '50%',
   },
 });

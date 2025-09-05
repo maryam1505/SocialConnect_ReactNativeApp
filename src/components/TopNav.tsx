@@ -1,5 +1,5 @@
-import { BackHandler, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, { useCallback, useEffect } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback } from 'react';
 import BellIcon from '../../assets/icons/bell-filled.svg';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
@@ -34,6 +34,7 @@ const TopNav = () => {
 
     return (
         <View style={styles.container}>
+            {/* ## Home Screen Header bar ## */}
             {route.name === 'Home' && (
                 <Header
                     title={
@@ -72,28 +73,20 @@ const TopNav = () => {
                 />
             )}
 
-            {route.name === 'Settings' && (
-                <> 
-                    <View style={styles.settingsTitle}> 
-                        <TouchableOpacity onPress={backAction}> 
-                            <BackIcon width={22} height={22}/> 
-                        </TouchableOpacity> 
-                        <Text style={[styles.title, {fontFamily: appTheme.fonts.medium.fontFamily, fontWeight: appTheme.fonts.medium.fontWeight}]}> Settings</Text> 
-                    </View> 
-                </>
+            {/* ## New Post Screen Header bar ## */}
+            {route.name === 'NewPost' && (
+                <Header
+                    showBack
+                    title="New Post"
+                    onBack={backAction}
+                    showSettings
+                    onSettings={handleSettings}
+                    styles={styles}
+                    appTheme={appTheme}
+                />
             )}
 
-            {route.name === 'Notification' && (
-                <> 
-                    <View style={styles.settingsTitle}> 
-                        <TouchableOpacity onPress={backAction}> 
-                            <BackIcon width={22} height={22}/> 
-                        </TouchableOpacity> 
-                        <Text style={[styles.title, {fontFamily: appTheme.fonts.medium.fontFamily, fontWeight: appTheme.fonts.medium.fontWeight}]}> Notifications</Text> 
-                    </View> 
-                </>
-            )}
-
+            {/* ## Profile Screen Header bar ## */}
             {route.name === 'Profile' && (
                 <Header
                     showBack
@@ -106,16 +99,40 @@ const TopNav = () => {
                 />
             )}
 
-            {route.name === 'NewPost' && (
-                <Header
-                    showBack
-                    title="New Post"
-                    onBack={backAction}
-                    showSettings
-                    onSettings={handleSettings}
-                    styles={styles}
-                    appTheme={appTheme}
-                />
+            {/* ## Update Profile Screen Header bar ## */}
+            {route.name === 'UpdateProfile' && (
+                <> 
+                    <View style={styles.settingsTitle}> 
+                        <TouchableOpacity onPress={backAction}> 
+                            <BackIcon width={22} height={22}/> 
+                        </TouchableOpacity> 
+                        <Text style={[styles.title, {fontFamily: appTheme.fonts.medium.fontFamily, fontWeight: appTheme.fonts.medium.fontWeight}]}> Update Profile</Text> 
+                    </View> 
+                </>
+            )}
+
+            {/* ## Notification Screen Header bar ## */}
+            {route.name === 'Notification' && (
+                <> 
+                    <View style={styles.settingsTitle}> 
+                        <TouchableOpacity onPress={backAction}> 
+                            <BackIcon width={22} height={22}/> 
+                        </TouchableOpacity> 
+                        <Text style={[styles.title, {fontFamily: appTheme.fonts.medium.fontFamily, fontWeight: appTheme.fonts.medium.fontWeight}]}> Notifications</Text> 
+                    </View> 
+                </>
+            )}
+
+            {/* ## Settings Screen Header bar ## */}
+            {route.name === 'Settings' && (
+                <> 
+                    <View style={styles.settingsTitle}> 
+                        <TouchableOpacity onPress={backAction}> 
+                            <BackIcon width={22} height={22}/> 
+                        </TouchableOpacity> 
+                        <Text style={[styles.title, {fontFamily: appTheme.fonts.medium.fontFamily, fontWeight: appTheme.fonts.medium.fontWeight}]}> Settings</Text> 
+                    </View> 
+                </>
             )}
         </View>
     )
