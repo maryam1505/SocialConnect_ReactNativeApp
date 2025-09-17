@@ -32,7 +32,7 @@ const HomeScreen = () => {
     <>
       <TopNav/>
       <View style={[styles.container,{backgroundColor: appTheme.colors.background }]}>
-        <Feed deepLinkPostId={deepLinkPostId} />
+        <Feed />
       </View>
       <FootNav/>
     </>

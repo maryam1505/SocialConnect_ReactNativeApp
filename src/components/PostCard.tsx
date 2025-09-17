@@ -9,6 +9,7 @@ import { collection, doc, getFirestore, increment, onSnapshot, orderBy, query, r
 import SendIcon from '../../assets/icons/send.svg';
 import CloseIcon from '../../assets/icons/close.svg';
 import { Share } from 'react-native';
+import firestore from '@react-native-firebase/firestore';
 
 export interface Post {
   id: string;
@@ -87,24 +88,34 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     const likeRef = doc(db, 'posts', post.id, 'likes', userId);
     const postRef = doc(db, 'posts', postId);
 
-    if(isLiked) {
-      /* ## Unlike Post ## */
-      await runTransaction(db, async transaction => {
-        transaction.delete(likeRef);
-        transaction.update(postRef, {likes: increment(-1)});
-      });
+    await runTransaction(db, async transaction => {
+      const postSnap = await transaction.get(postRef);
 
-    } else {
-      /* ## Like Post ## */
-      await runTransaction(db, async transaction => {
-        transaction.set(likeRef, {isLiked: true});
-        transaction.update(postRef, {likes: increment(1)});
+      const data = postSnap.data();
+      if (!data) throw "Post does not exist";
+
+      const currentLikes = data.likes ?? 0;
+
+      if (isLiked) {
+        // ✅ Unlike Post
+        transaction.delete(likeRef);
+        transaction.update(postRef, {
+          likes: Math.max(0, currentLikes - 1), // prevent negatives
+        });
+      } else {
+        // ✅ Like Post
+        transaction.set(likeRef, { isLiked: true });
+        transaction.update(postRef, {
+          likes: currentLikes + 1,
+        });
+      }
+    }); 
+
+    if (!isLiked) {
+      scale.value = withSpring(1.3, {}, () => {
+        scale.value = withSpring(1);
       });
     }
-
-    scale.value = withSpring(1.3, {}, () => {
-      scale.value = withSpring(1);
-    });
   };
 
 
@@ -140,7 +151,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     if (!userId || !commentText.trim()) return;
     const user = getAuth(app).currentUser;
 
-    const commentRef = doc(db, 'posts', post.id, 'comments');
+    const commentRef = doc(collection(db, 'posts', post.id, 'comments'));
     const postRef = doc(db, 'posts',post.id);
 
     await runTransaction(db, async transaction => {
@@ -158,22 +169,34 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   /* -------------------------------- ## Handling Shares ## -------------------------------- */
 
   /* ## Share Post System ## */
-  const sharePost = async (postId: any) => {
+  const sharePost = async (post: Post) => {
     try {
-      const postRef = doc(db, 'posts', postId);
-      const url = `socialconnect://post/${postId}`;
-      await updateDoc(postRef, {
-        shares: increment(1),
-      });
-      await Share.share({
+
+      if (!post?.id) {
+        console.error("Post is missing id:", post);
+        Alert.alert("Error", "Post ID is missing.");
+        return;
+      }
+      const postRef = firestore().collection('posts').doc(post.id);
+
+      // const url = `https://yourdomain.com/post/${post.id} 1VAvqKa5iWOH19WtXCwX`;
+      const url = `https://exampledomain.com/post/${post.id}`;
+
+      // Open system share sheet
+      const result = await Share.share({
         message: `${post.text ?? 'Check out this post!'}\n\n${url}\n\nShared via SocialConnect`,
-        url: url,
       });
+
+      // Increment ONLY if actually shared
+      if (result.action === Share.sharedAction) {
+        await postRef.update({
+          shares: firestore.FieldValue.increment(1),
+        });
+      }
     } catch (error) {
-      Alert.alert("Error", "Unable to share the post right now.");
-      console.error("Share error:", error);
+      Alert.alert('Error', 'Unable to share the post right now.');
     }
-  }
+  };
 
   /* ## Fetch Realtime Share Counts ## */
   useEffect(() => {
@@ -259,7 +282,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         </TouchableOpacity>
 
         {/* ## Share ## */}
-        <TouchableOpacity style={styles.engageItem} onPress={() => sharePost(post.id)}>
+        <TouchableOpacity style={styles.engageItem} onPress={() => sharePost(post)}>
           <Ionicons name="share-social-outline" size={20} color="#444" />
           <Text style={styles.engageText}>{sharesCount}</Text>
         </TouchableOpacity>

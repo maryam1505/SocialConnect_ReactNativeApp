@@ -56,9 +56,14 @@ const ProfileScreen = () => {
     return () => unsubscribe();
   }, [currentUser]);
 
+  /* ## Handle Profile Update ## */
   const handleUpdateProfile = useCallback(()=>{
     navigation.navigate('UpdateProfile');
-  }, [navigation]); 
+  }, [navigation]);
+
+  const handleFollow = () => {
+
+  }
 
   /* ## Manually Count the totalPosts of Current User ## */
 
@@ -88,6 +93,7 @@ const ProfileScreen = () => {
   return (
     <>
       <TopNav />
+
       <View style={styles.container}>
         {profile ? (
           <View style={styles.profileBox}>
@@ -110,8 +116,12 @@ const ProfileScreen = () => {
             <Text style={styles.email}>No email available</Text>
           </View>
         )}
-        <View>
+        <View style={styles.btnFlex}>
           <PrimaryButton onPress={handleUpdateProfile} title='Update Profile'/>
+          <PrimaryButton onPress={handleFollow} title='Follow'/>
+        </View>
+        <View>
+          
         </View>
       </View>
 
@@ -167,5 +177,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     marginTop: 10,
+  },
+  btnFlex: {
+    display: 'flex',
+    width: '100%',
+    justifyContent: 'space-around',
   },
 });

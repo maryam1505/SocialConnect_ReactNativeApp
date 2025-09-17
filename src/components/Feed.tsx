@@ -5,22 +5,19 @@ import { collection, doc, getDoc, getFirestore, onSnapshot, orderBy, query, wher
 import { useTheme } from '../context/ThemeContext';
 import { getApp } from '@react-native-firebase/app';
 import { getAuth } from '@react-native-firebase/auth';
+import FeedLoader from './FeedLoader';
 
-type FeedProps = {
-  deepLinkPostId?: string;
-};
 
-const Feed: React.FC<FeedProps> = ({ deepLinkPostId }) => {
+
+const Feed: React.FC = () => {
   const { appTheme } = useTheme();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [highlightPost, setHighlightPost] = useState<Post | null>(null);
 
   const app = getApp();
   const currentUserId = getAuth(app).currentUser?.uid;
 
   const db = getFirestore(app);
-
 
 /* ## Fetching Posts Except the current User ## */
   useEffect(() => {
@@ -68,18 +65,8 @@ const Feed: React.FC<FeedProps> = ({ deepLinkPostId }) => {
           avatar: user?.avatar ?? null,
         };
       });
-
-      let highlight: Post | null = null;
-      let rest: Post[] = fetchedPosts;
-
-      if (deepLinkPostId) {
-        highlight = fetchedPosts.find(p => p.id === deepLinkPostId) ?? null;
-        rest = fetchedPosts.filter(p => p.id !== deepLinkPostId);
-      }
-      rest = rest.sort(() => Math.random() - 0.5);
-
-      setHighlightPost(highlight);
-      setPosts(rest);
+      const randomPost = fetchedPosts.sort(() => Math.random() - 0.5);
+      setPosts(randomPost);
       setLoading(false);
     });
 
@@ -87,17 +74,13 @@ const Feed: React.FC<FeedProps> = ({ deepLinkPostId }) => {
 
   }, [currentUserId]);
 
-   if (loading) {
-    return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color={appTheme.colors.primaryDark} />
-      </View>
-    );
-  }
+   {loading && <FeedLoader visible={loading} />}
+
+
 
   return (
     <FlatList
-      data={highlightPost ? [highlightPost, ...posts] : posts}
+      data={posts}
       keyExtractor={item => item.id}
       renderItem={({ item }) => <PostCard post={item} />}
       ListEmptyComponent={<View style={styles.empty}>
