@@ -74,19 +74,26 @@ const Feed: React.FC = () => {
 
   }, [currentUserId]);
 
-   {loading && <FeedLoader visible={loading} />}
 
 
 
   return (
-    <FlatList
-      data={posts}
-      keyExtractor={item => item.id}
-      renderItem={({ item }) => <PostCard post={item} />}
-      ListEmptyComponent={<View style={styles.empty}>
-        <Text>No posts yet. Be the first to post!</Text>
-      </View>}
-    />
+    <View style={{ flex: 1 }}>
+      {loading ? (
+        <FeedLoader visible={loading} />
+      ) : (
+        <FlatList
+          data={posts}
+          keyExtractor={item => item.id}
+          renderItem={({ item }) => <PostCard post={item} />}
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Text>No posts yet. Be the first to post!</Text>
+            </View>
+          }
+        />
+      )}
+    </View>
   );
 };
 

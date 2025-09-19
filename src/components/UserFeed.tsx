@@ -60,11 +60,23 @@ const UserFeed: React.FC = () => {
 
     }, [currentUserId]);
     
-    {loading && <FeedLoader visible={loading} />}
     
     return (
-        <View>
-        <Text>UserFeed</Text>
+        <View style={{ flex: 1 }}>
+            {loading ? (
+                <FeedLoader visible={loading} />
+            ) : (
+                <FlatList
+                data={posts}
+                keyExtractor={item => item.id}
+                renderItem={({ item }) => <PostCard post={item} />}
+                ListEmptyComponent={
+                    <View style={styles.empty}>
+                    <Text>No posts yet. Be the first to post!</Text>
+                    </View>
+                }
+                />
+            )}
         </View>
     )
 }
@@ -72,7 +84,9 @@ const UserFeed: React.FC = () => {
 export default UserFeed;
 
 const styles = StyleSheet.create({
-    loaderContainer: {
-
-    }
+    empty: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });

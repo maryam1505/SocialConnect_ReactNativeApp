@@ -10,9 +10,12 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { useNavigation } from '@react-navigation/native';
 import PrimaryButton from '../components/PrimaryButton';
+import UserFeed from '../components/UserFeed';
+import FeedLoader from '../components/FeedLoader';
 
 type UserProfile = {
   name?: string;
+  username?: string;
   email?: string;
   bio?: string;
   avatar?: string;
@@ -61,9 +64,7 @@ const ProfileScreen = () => {
     navigation.navigate('UpdateProfile');
   }, [navigation]);
 
-  const handleFollow = () => {
-
-  }
+  
 
   /* ## Manually Count the totalPosts of Current User ## */
 
@@ -73,59 +74,49 @@ const ProfileScreen = () => {
     const postRef = collection(db, 'posts');
     const q = query(postRef, where('userId', '==', currentUser.uid));
     const unsubscribe = onSnapshot(q, snapshot => {
-        setProfile(prev => ({
-          ...prev,
-          totalPosts: snapshot.size, 
-        }));
+        setProfile(prev => prev ? { ...prev, totalPosts: snapshot.size } : { totalPosts: snapshot.size });
       });
 
     return () => unsubscribe();
   }, [currentUser]);
 
-  if (loading) {
-    return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color={appTheme.colors.primaryDark} />
-      </View>
-    );
-  }
-
   return (
     <>
-      <TopNav />
-
-      <View style={styles.container}>
-        {profile ? (
-          <View style={styles.profileBox}>
-            {profile.avatar ? (
-              <Image source={{ uri: profile.avatar }} style={styles.avatar} />
-            ) : (
-              <View style={[styles.avatar, { backgroundColor: '#ccc' }]} />
-            )}
-            <Text style={styles.name}>{profile.name}</Text>
-            <Text style={styles.email}>{profile.email}</Text>
-            <Text style={styles.bio}>{profile.bio || 'No bio available'}</Text>
-            <Text style={styles.posts}>Posts: {profile.totalPosts || 0}</Text>
-          </View>
-        ) : (
-          <View style={{flexDirection: 'column', alignItems: 'center'}}>
-            <View style={[styles.avatar, { backgroundColor: '#ccc' }]} />
-            {/* <Image source={require('../../assets/images/profile-placeholder.jpg')} style={styles.avatar} /> */}
-            <Text style={styles.name}>Unknown User</Text>
-            <Text style={styles.name}>{currentUser?.uid}</Text>
-            <Text style={styles.email}>No email available</Text>
-          </View>
-        )}
-        <View style={styles.btnFlex}>
-          <PrimaryButton onPress={handleUpdateProfile} title='Update Profile'/>
-          <PrimaryButton onPress={handleFollow} title='Follow'/>
-        </View>
-        <View>
-          
-        </View>
-      </View>
-
-      <FootNav />
+      {loading ? (
+            <FeedLoader visible={loading} />
+        ): (
+          <>
+            <TopNav />
+      
+            <View style={styles.container}>
+              {profile ? (
+                <View style={styles.profileBox}>
+                    {profile.avatar ? (
+                      <Image source={{ uri: profile.avatar }} style={styles.avatar} />
+                    ) : (
+                      <View style={[styles.avatar, { backgroundColor: '#ccc' }]} />
+                    )}
+                    <Text style={styles.name}>{profile.name || 'Unknown User'}</Text>
+                    <Text style={styles.email}>{profile.username || '@unknown_user'}</Text>
+                    <Text style={styles.bio}>{profile.bio || 'No bio available'}</Text>
+                    <Text style={styles.posts}>Posts: {profile.totalPosts || 0}</Text>
+                </View>
+              ) : (
+                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                  <View style={[styles.avatar, { backgroundColor: '#ccc' }]} />
+                  <Text style={styles.name}>Unknown User</Text>
+                  <Text style={styles.name}>{currentUser?.uid}</Text>
+                  <Text style={styles.email}>No email available</Text>
+                </View>
+              )}
+                
+                {/* <UserFeed/> */}
+            </View>
+      
+            <FootNav />
+          </>
+        )
+      }
     </>
   );
 };
@@ -141,13 +132,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '500',
-  },
-  loaderContainer: {
-    backgroundColor: '#eee',
-    opacity: 0.5,
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   profileBox: {
     alignItems: 'center',
@@ -178,9 +162,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginTop: 10,
   },
-  btnFlex: {
-    display: 'flex',
-    width: '100%',
-    justifyContent: 'space-around',
-  },
+  // profileBorder: {
+  //   borderColor: "#000",
+  //   backgroundColor: "#000",
+  // },
 });

@@ -11,7 +11,6 @@ import { Alert } from 'react-native';
 import { checkOnboardingSeen } from './src/utils/storage';
 import Loader from './src/components/Loader';
 import { createNavigationContainerRef } from '@react-navigation/native';
-import { Linking } from "react-native";
 
 /* ## Screens ## */
 import LoginScreen from './src/screens/LoginScreen';
@@ -19,11 +18,15 @@ import OnBoardingScreen from './src/screens/OnBoardingScreen';
 import SignupScreen from './src/screens/SignupScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import UserProfileScreen from './src/screens/UserProfileScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import NewPostScreen from './src/screens/NewPostScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
 import UpdateProfileScreen from './src/screens/UpdateProfileScreen';
 import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
+import ExploreScreen from './src/screens/ExploreScreen';
+import ChatScreen from './src/screens/ChatScreen';
+import UserChatScreen from './src/screens/UserChatScreen';
 
 export type RootStackParamList = {
   OnBoarding: undefined;
@@ -37,20 +40,20 @@ export type RootStackParamList = {
   NewPost: undefined;
   Notification: undefined;
   ChangePassword: undefined;
+  Explore: undefined;
+  Chat: undefined;
+  UserChat: { userId : string };
+  UserProfile: { userId: string };
+};
+
+type NotificationData = {
+  screen: keyof RootStackParamList;
+  userId?: string;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const navigationRef = createNavigationContainerRef<RootStackParamList>();
-
-const linking = {
-  prefixes: ["socialconnect://"], 
-  config: {
-    screens: {
-      Home: "post/:id",
-    },
-  },
-};
 
 function MainApp() {
   const [initializing, setInitializing] = useState(true);
@@ -118,14 +121,26 @@ function MainApp() {
   // When app opened from background
   const unsubscribe = messaging().onNotificationOpenedApp(remoteMessage => {
     if (remoteMessage?.data?.screen && navigationRef.isReady()) {
-      navigationRef.current?.navigate(remoteMessage.data.screen as keyof RootStackParamList);
+      const data = remoteMessage.data as NotificationData;
+
+      if (data.screen === "UserProfile" && data.userId) {
+        navigationRef.current?.navigate("UserProfile", { userId: data.userId });
+      } else {
+        navigationRef.current?.navigate(data.screen as any);
+      }
     }
   });
 
   // When app opened from quit
   messaging().getInitialNotification().then(remoteMessage => {
     if (remoteMessage?.data?.screen && navigationRef.isReady()) {
-      navigationRef.current?.navigate(remoteMessage.data.screen as keyof RootStackParamList);
+      const data = remoteMessage.data as NotificationData;
+
+      if (data.screen === "UserProfile" && data.userId) {
+        navigationRef.current?.navigate("UserProfile", { userId: data.userId });
+      } else {
+        navigationRef.current?.navigate(data.screen as any);
+      }
     }
   });
 
@@ -141,7 +156,7 @@ function MainApp() {
   if (initializing) return <Loader />;
 
   return (
-    <NavigationContainer theme={navigationTheme} fallback={<Loader/>} linking={linking}>
+    <NavigationContainer theme={navigationTheme} fallback={<Loader/>}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!onboardingSeen && !user && (
           <Stack.Screen name="OnBoarding" component={OnBoardingScreen} />
@@ -157,10 +172,14 @@ function MainApp() {
         <Stack.Screen name="Home" component={HomeScreen}  />
         <Stack.Screen name="NewPost" component={NewPostScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="UserProfile" component={UserProfileScreen} />
         <Stack.Screen name="UpdateProfile" component={UpdateProfileScreen} />
         <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="Notification" component={NotificationScreen} />
+        <Stack.Screen name="Explore" component={ExploreScreen} />
+        <Stack.Screen name="Chat" component={ChatScreen} />
+        <Stack.Screen name="UserChat" component={UserChatScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

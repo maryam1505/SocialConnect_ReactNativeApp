@@ -5,11 +5,15 @@ import { formatDistanceToNow } from 'date-fns';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { getApp } from '@react-native-firebase/app';
 import { getAuth } from '@react-native-firebase/auth';
-import { collection, doc, getFirestore, increment, onSnapshot, orderBy, query, runTransaction, serverTimestamp, updateDoc } from '@react-native-firebase/firestore';
+import { collection, doc, getDoc, getFirestore, increment, onSnapshot, orderBy, query, runTransaction, serverTimestamp, updateDoc } from '@react-native-firebase/firestore';
 import SendIcon from '../../assets/icons/send.svg';
 import CloseIcon from '../../assets/icons/close.svg';
 import { Share } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
+import { RootStackParamList } from '../../App';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import PrimaryButton from './PrimaryButton';
 
 export interface Post {
   id: string;
@@ -28,7 +32,16 @@ interface PostCardProps {
   post: Post;
 }
 
+interface UserData {
+  name: string;
+  username: string;
+  avatar?: string;
+}
+// type ScreenNavigationProp<T extends keyof RootStackParamList> = NativeStackNavigationProp<RootStackParamList, T>;
+
 const PostCard: React.FC<PostCardProps> = ({ post }) => {
+
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [isLiked, setIsLiked] = useState(false);
   const [likes, setLikes] = useState(0);
   const [showComments, setShowComments] = useState(false);
@@ -121,12 +134,31 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
   /* -------------------------------- ## Handling Comments ## -------------------------------- */
 
+
   /* ## Fetch Realtime Comments ## */
   useEffect(() => {
     const CommentRef = collection(db,'posts', post.id,'comments');
     const q = query(CommentRef, orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, snapshot => {
-      const fetched = snapshot.docs.map((docSnap: any)  => ({id: docSnap.id, ...docSnap.data()}));
+    const unsubscribe = onSnapshot(q, async snapshot => {
+      const fetched = await Promise.all(
+        snapshot.docs.map(async (docSnap: any) => {
+          const data = docSnap.data();
+          let userData: UserData | undefined;
+
+          if( data.userId ) {
+            const userDoc = await getDoc(doc(db, "users", data.userId));
+            if (userDoc.exists()) {
+              userData = userDoc.data() as UserData;
+            }
+          }
+
+          return {
+          id: docSnap.id,
+          ...data,
+          ...userData, 
+          };
+        })
+      );
       setComments(fetched);
     });
     return () => unsubscribe();
@@ -217,7 +249,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     <View style={styles.card}>
       {/* User Info */}
       <View style={styles.header}>
-        <View style={styles.avatarHeader}>
+        <TouchableOpacity style={styles.avatarHeader} onPress={() => navigation.navigate('UserProfile', { userId: post.id })}>
           <View style={styles.avatarContainer}>
             <Image source={
                 typeof post.avatar === 'string'
@@ -229,16 +261,20 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.name}>{post.name}</Text>
-            <Text style={styles.time}>{post.username}</Text>
+            {/* <Text style={styles.time}>{post.username}</Text> */}
+            <Text style={styles.time}>
+              {post?.createdAt
+                ? formatDistanceToNow(post.createdAt.toDate(), {
+                  addSuffix: false,
+                })
+                : 'Just now'}
+            </Text>
           </View>
+        </TouchableOpacity>
+            <PrimaryButton onPress={()=> {{}}} title='Follow' style={{width:"30%", paddingVertical:10, }}/>
+        <View>
+          
         </View>
-        <Text style={styles.time}>
-          {post?.createdAt
-            ? formatDistanceToNow(post.createdAt.toDate(), {
-              addSuffix: false,
-            })
-            : 'Just now'}
-        </Text>
       </View>
 
       {/* Post Text */}
@@ -305,9 +341,60 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             {/* ## Comments List ## */}
             <FlatList data={comments} keyExtractor={item => item.id}
             renderItem={({item}) => (
-              <Text style={{ paddingVertical: 5 }}>
-                <Text style={{ fontWeight: '600' }}>{item.username}:</Text> {item.text}
-              </Text>
+              <View style={{ marginVertical: 2, paddingHorizontal: 7, paddingVertical: 12,}}>
+                <View style={{ flexDirection: 'row', alignItems:"center", }}>
+                  {/* Avatar */}
+                    <View style={{ width: "17%", alignItems: "center" }}>
+                      <Image
+                        source={
+                          typeof item.avatar === "string"
+                            ? { uri: item.avatar }
+                            : require("../../assets/images/profile-placeholder.jpg")
+                        }
+                        style={{
+                          width: 50,
+                          height: 50,
+                          borderRadius: 25,
+                        }}
+                      />
+                    </View>
+                  {/* Content Container */}
+                  <View style={{flex: 1, width: "85%", }}>
+                    {/* Header with name, username, and time */}
+                    <View style={{  flexDirection: 'row', alignItems: 'center',}}>
+                      <View>
+                        <Text style={{ fontWeight: '600', marginRight: 5 }}>
+                          {item.name ?? 'Unknown'}
+                        </Text>
+                        <Text style={{ color: 'gray', fontSize: 12 }}>
+                          {item.username ?? '@anonymous'}
+                        </Text>
+                      </View>
+                      <View style={{ flex: 1 }} />
+                      {/* Time */}
+                      <Text style={{ color: 'gray', fontSize: 11, marginTop: 4 }}>
+                        {item.createdAt?.toDate
+                          ? formatDistanceToNow(item.createdAt.toDate(), { addSuffix: true })
+                          : 'Just now'}
+                      </Text>
+                    </View>
+                    <View style={{ marginTop: 7,}}>
+                      {/* Comment text */}            
+                          <Text style={{ 
+                            fontSize: 14,
+                            lineHeight: 20,
+                            color: '#333'
+                          }}>
+                            {item.text}
+                          </Text>
+                    </View>
+                  </View>
+                </View>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <View style={{width: "15%"}}/>
+
+                </View>
+              </View>
             )}
             ListEmptyComponent={
               <View style={{ paddingVertical: 20, alignItems: 'center' }}>
