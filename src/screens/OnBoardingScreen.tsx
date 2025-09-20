@@ -6,6 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { setOnboardingSeen } from '../utils/storage';
 import { useTheme } from '../context/ThemeContext';
+import AppText from '../components/AppText';
 
 
 type OnBoardingScreenNavigationProp = NativeStackNavigationProp<
@@ -29,10 +30,10 @@ const OnBoardingScreen = () => {
         style={styles.imageBackground}
       />
       <View style={styles.content}>
-        <Text style={[ styles.title, { color: appTheme.colors.textPrimary, fontFamily: appTheme.fonts.bold.fontFamily }, ]}>Let’s connect {'\n'}with each other</Text>
-        <Text style={[styles.subtitle, { color: appTheme.colors.textSecondary }]}>
+        <AppText variant='h1' style={[ styles.title, ]}>Let’s connect {'\n'}with each other</AppText>
+        <AppText secondary style={[styles.subtitle]}>
           React native app using firebase authentication for better backend experience.
-        </Text>
+        </AppText>
         <PrimaryButton
           title="Get Started"
           onPress={handlePress}
@@ -54,9 +55,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  colorWhite: {
-    color: '#fff',
-  },
   imageBackground: {
     width: '100%',
     height: '55%',
@@ -71,32 +69,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   title: {
-    fontWeight: '500',
-    fontSize: 40,
     lineHeight: 56,
     letterSpacing: 0,
     textAlign: 'center',
     marginBottom: 10,
   },
   subtitle: {
-    fontWeight: '400',
-    fontSize: 14,
     lineHeight: 24,
     letterSpacing: 0,
     textAlign: 'center',
-    
-  },
-
-  button: {
-    width: '80%',
-    paddingVertical: 14,
-    borderRadius: 30,
-    marginTop: 20,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });

@@ -1,5 +1,12 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useCallback } from 'react';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../App';
+import { useTheme } from '../context/ThemeContext';
+import AppText from './AppText';
+
+/* ## SVG Icons ## */
 import HomeIcon from '../../assets/icons/home.svg';
 import HomeFilled from '../../assets/icons/home-filled.svg';
 import ProfileIcon from '../../assets/icons/profile.svg';
@@ -10,10 +17,7 @@ import SearchIcon from '../../assets/icons/search.svg';
 import SearchFilled from '../../assets/icons/search-filled.svg';
 import ChatIcon from '../../assets/icons/chat.svg';
 import ChatFilled from '../../assets/icons/chat-filled.svg';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../App';
-import { useTheme } from '../context/ThemeContext';
+
 
 const FootNav = () => {
     const { appTheme } = useTheme(); 
@@ -41,39 +45,42 @@ const FootNav = () => {
         navigation.navigate('Profile');
     }, [navigation]);
 
+    const isActive = (screen: keyof RootStackParamList) => route.name === screen;
+    const getLabelColor = (screen: keyof RootStackParamList) => isActive(screen) ? appTheme.colors.primaryLight : appTheme.colors.textSecondary;
+
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: appTheme.colors.background }]}>
             {/* Home */}
             <TouchableOpacity onPress={handleHomeNavigation}>
                 <View style={styles.flexIcon}>
-                    {route.name === 'Home' ? (
-                        <HomeFilled width={36} height={36} />
+                    {isActive('Home') ? (
+                        <HomeFilled width={30} height={30} />
                     ) : (
-                        <HomeIcon width={36} height={36} />
+                        <HomeIcon width={30} height={30} />
                     )}
-                    <Text style={route.name === 'Home' ? {color: appTheme.colors.primaryLight} : null}>Home</Text>
+                    <AppText variant='small' style={{color: getLabelColor('Home')}}>Home</AppText>
                 </View>
             </TouchableOpacity>
 
             {/* Explore */}
             <TouchableOpacity onPress={handleExplore}>
                 <View style={styles.flexIcon}>
-                    {route.name === 'Explore' ? (
-                        <SearchFilled width={36} height={36} />
+                    {isActive('Explore') ? (
+                        <SearchFilled width={30} height={30} />
                     ) : (
-                        <SearchIcon width={36} height={36} />
+                        <SearchIcon width={30} height={30} />
                     )}
-                    <Text style={route.name === 'Explore' ? {color: appTheme.colors.primaryLight} : null}>Explore</Text>
+                    <AppText variant='small' style={{color: getLabelColor('Explore')}}>Explore</AppText>
                 </View>
             </TouchableOpacity>
 
             {/* Add / New Post */}
             <TouchableOpacity onPress={handleNewPost}>
                 <View style={styles.flexIcon}>
-                    {route.name === 'NewPost' ? (
-                        <AddFilled width={36} height={36} />
+                    {isActive('NewPost') ? (
+                        <AddFilled width={30} height={30} />
                     ) : (
-                        <AddIcon width={36} height={36} />
+                        <AddIcon width={30} height={30} />
                     )}
                 </View>
             </TouchableOpacity>
@@ -81,24 +88,24 @@ const FootNav = () => {
             {/* Chat */}
             <TouchableOpacity onPress={handleChat}>
                 <View style={styles.flexIcon}>
-                    {route.name === 'Chat' ? (
-                        <ChatFilled width={36} height={36} />
+                    {isActive('Chat') ? (
+                        <ChatFilled width={30} height={30} />
                     ) : (
-                        <ChatIcon width={36} height={36} />
+                        <ChatIcon width={30} height={30} />
                     )}
-                    <Text style={route.name === 'Chat' ? {color: appTheme.colors.primaryLight} : null}>Chats</Text>
+                    <AppText variant='small' style={{color: getLabelColor('Chat')}}>Chat</AppText>
                 </View>
             </TouchableOpacity>
 
             {/* Handle Profile */}
             <TouchableOpacity onPress={handleProfile}>
                 <View style={styles.flexIcon}>
-                    {route.name === 'Profile' ? (
-                        <ProfileFilled width={36} height={36} />
+                    {isActive('Profile') ? (
+                        <ProfileFilled width={30} height={30} />
                     ) : (
-                        <ProfileIcon width={36} height={36} />
+                        <ProfileIcon width={30} height={30} />
                     )}
-                    <Text style={route.name === 'Profile' ? {color: appTheme.colors.primaryLight} : null}>Profile</Text>
+                    <AppText variant='small' style={{color: getLabelColor('Profile')}}>Profile</AppText>
                 </View>
             </TouchableOpacity>
         </View>

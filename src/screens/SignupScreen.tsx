@@ -11,6 +11,7 @@ import { RootStackParamList } from '../../App';
 import GradientInput from '../components/GradientInput';
 import { useTheme } from '../context/ThemeContext';
 import { collection, getFirestore, serverTimestamp, setDoc } from '@react-native-firebase/firestore';
+import AppText from '../components/AppText';
 
 
 type SignUpScreenNavigationProp = NativeStackNavigationProp<
@@ -101,7 +102,7 @@ const SignupScreen = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: appTheme.colors.background },]}>
-      <Text style={[ styles.title, { color: appTheme.colors.textPrimary, fontFamily: appTheme.fonts.bold.fontFamily }, ]}>Sign Up</Text>
+      <AppText variant='h1' style={styles.title }>Sign Up</AppText>
       <View style={styles.formContainer}>
 
         {/* Name Input */}
@@ -154,9 +155,9 @@ const SignupScreen = () => {
 
         {/* Sign In Link */}
         <View style={styles.signupContainer}>
-          <Text style={{ color: appTheme.colors.textSecondary }}>Already have an account?{' '}</Text>
+          <AppText secondary variant='small'>Already have an account?{' '}</AppText>
           <TouchableOpacity onPress={handlePress}>
-            <Text style={[ styles.signupText, { color: appTheme.colors.primaryLight }, ]}>Sign in</Text>
+            <AppText variant='h2' style={{ color: appTheme.colors.primaryLight }}>Sign in</AppText>
           </TouchableOpacity>
         </View>
       </View>
@@ -175,8 +176,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    fontWeight: '500',
-    fontSize: 40,
     lineHeight: 56,
     letterSpacing: 0,
     textAlign: 'center',
@@ -200,8 +199,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 30,
-  },
-  signupText: {
-    fontWeight: '700',
   },
 });

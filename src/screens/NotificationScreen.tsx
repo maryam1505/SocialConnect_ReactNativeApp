@@ -4,6 +4,7 @@ import TopNav from '../components/TopNav'
 import { collection, getFirestore, onSnapshot, orderBy, query } from '@react-native-firebase/firestore';
 import { getApp } from '@react-native-firebase/app';
 import { getAuth } from '@react-native-firebase/auth';
+import AppText from '../components/AppText';
 
 const NotificationScreen = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -32,12 +33,12 @@ const NotificationScreen = () => {
           keyExtractor={(item) => item.id}
           renderItem={({item}) => (
             <View style={{ padding: 10, borderBottomWidth: 1 }}>
-              <Text style={{ fontWeight: 'bold', fontSize: 18, }}>{item.title}</Text>
-              <Text style={{fontSize: 16,}}>{item.body}</Text>
+              <AppText variant='h3'>{item.title}</AppText>
+              <AppText>{item.body}</AppText>
             </View>
           )}
           ListEmptyComponent={
-            <Text style={{ textAlign: "center", marginTop: 20 }}>No notifications yet</Text>
+            <AppText variant='caption' style={{ textAlign: "center", marginTop: 20 }}>No notifications yet</AppText>
           }
         />
       </View>

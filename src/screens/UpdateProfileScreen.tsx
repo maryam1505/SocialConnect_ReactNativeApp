@@ -12,6 +12,8 @@ import PrimaryButton from '../components/PrimaryButton';
 import { launchImageLibrary } from 'react-native-image-picker';
 import CameraIcon from '../../assets/icons/camera.svg';
 import { supabase } from '../../supabase';
+import FeedLoader from '../components/FeedLoader';
+import AppText from '../components/AppText';
 
 type UserProfile = {
   name?: string;
@@ -159,71 +161,70 @@ const UpdateProfileScreen = () => {
     },
   });
 
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Loading profile...</Text>
-      </View>
-    );
-  }
 
   return (
     <>
-      <TopNav />
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.avatarContainer}>
-          <View>
-            {/* Avatar Preview */}
-            {imageUri || formik.values.avatar ? (
-              <Image source={{ uri: imageUri || formik.values.avatar }} style={styles.avatarPreview} />
-            ) : (
-              <View style={[styles.avatar, { backgroundColor: '#ccc' }]} />
+    {loading ? (
+      <FeedLoader visible={loading} />
+    ) : (
+      <>
+        <TopNav />
+        <ScrollView contentContainerStyle={styles.container}>
+          <View style={styles.avatarContainer}>
+            <View>
+              {/* Avatar Preview */}
+              {imageUri || formik.values.avatar ? (
+                <Image source={{ uri: imageUri || formik.values.avatar }} style={styles.avatarPreview} />
+              ) : (
+                <View style={[styles.avatar, { backgroundColor: '#ccc' }]} />
+              )}
+  
+              {/* Pick Image Button */}
+              <TouchableOpacity style={styles.uploadIcon} onPress={pickImage}>
+                <CameraIcon width={22} height={22} />
+              </TouchableOpacity>
+            </View>
+  
+            {formik.touched.avatar && formik.errors.avatar && (
+              <AppText error variant='small'>{formik.errors.avatar}</AppText>
             )}
-
-            {/* Pick Image Button */}
-            <TouchableOpacity style={styles.uploadIcon} onPress={pickImage}>
-              <CameraIcon width={22} height={22} />
-            </TouchableOpacity>
           </View>
-
-          {formik.touched.avatar && formik.errors.avatar && (
-            <Text style={styles.error}>{formik.errors.avatar}</Text>
-          )}
-        </View>
-
-        {/* ## Name Field ## */}
-        <GradientInput
-          placeholder="Enter your name"
-          value={formik.values.name}
-          onChangeText={formik.handleChange('name')}
-          onBlur={formik.handleBlur('name')}
-          error={formik.touched.name ? formik.errors.name : ''}
-        />
-
-        {/* ## Username Field ## */}
-        <GradientInput
-          placeholder="Enter your username"
-          value={formik.values.username}
-          onChangeText={formik.handleChange('username')}
-          onBlur={formik.handleBlur('username')}
-          error={formik.touched.username ? formik.errors.username : ''}
-        />
-
-        {/* ## Bio Field ## */}
-        <GradientInput
-          style={styles.textarea}
-          placeholder="Write your bio"
-          multiline
-          numberOfLines={4}
-          value={formik.values.bio}
-          onChangeText={formik.handleChange('bio')}
-          onBlur={formik.handleBlur('bio')}
-          error={formik.touched.bio ? formik.errors.bio : ''}
-        />
-
-        <PrimaryButton title="Save Changes" onPress={formik.handleSubmit} />
-
-      </ScrollView>
+  
+          {/* ## Name Field ## */}
+          <GradientInput
+            placeholder="Enter your name"
+            value={formik.values.name}
+            onChangeText={formik.handleChange('name')}
+            onBlur={formik.handleBlur('name')}
+            error={formik.touched.name ? formik.errors.name : ''}
+          />
+  
+          {/* ## Username Field ## */}
+          <GradientInput
+            placeholder="Enter your username"
+            value={formik.values.username}
+            onChangeText={formik.handleChange('username')}
+            onBlur={formik.handleBlur('username')}
+            error={formik.touched.username ? formik.errors.username : ''}
+          />
+  
+          {/* ## Bio Field ## */}
+          <GradientInput
+            style={styles.textarea}
+            placeholder="Write your bio"
+            multiline
+            numberOfLines={4}
+            value={formik.values.bio}
+            onChangeText={formik.handleChange('bio')}
+            onBlur={formik.handleBlur('bio')}
+            error={formik.touched.bio ? formik.errors.bio : ''}
+          />
+  
+          <PrimaryButton title="Save Changes" onPress={formik.handleSubmit} />
+  
+        </ScrollView>
+      </>
+    )}
     </>
   );
 };
@@ -241,7 +242,6 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   error: {
-    color: 'red',
     marginBottom: 8,
     fontSize: 12,
   },

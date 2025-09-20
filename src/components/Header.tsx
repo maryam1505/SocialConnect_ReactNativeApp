@@ -2,6 +2,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import BackIcon from '../../assets/icons/back.svg';
 import SettingsIcon from '../../assets/icons/settings-filled.svg';
+import AppText from './AppText';
 
 
 interface HeaderProps {
@@ -24,17 +25,10 @@ const Header: React.FC<HeaderProps> = ({showBack, title,showSettings,onBack,onSe
                 </TouchableOpacity>
             )}
             {title && (
-                <Text
-                style={[
-                    styles.title,
-                    {
-                    fontFamily: appTheme.fonts.medium.fontFamily,
-                    fontWeight: appTheme.fonts.medium.fontWeight,
-                    },
-                ]}
+                <AppText variant='h2'
                 >
                 {title}
-                </Text>
+                </AppText>
             )}
             {showSettings && (
                 <TouchableOpacity onPress={onSettings}>

@@ -7,6 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Header from './Header';
 import BackIcon from '../../assets/icons/back.svg';
+import AppText from './AppText';
 
 
 const TopNav = () => {
@@ -39,28 +40,26 @@ const TopNav = () => {
                 <Header
                     title={
                     <>
-                        <Text
+                        <AppText
                         style={[
                             styles.social,
                             {
                             color: appTheme.colors.primaryLight,
-                            fontFamily: appTheme.fonts.light.fontFamily,
                             },
                         ]}
                         >
                         Social
-                        </Text>
-                        <Text
+                        </AppText>
+                        <AppText
                         style={[
                             styles.connect,
                             {
                             color: appTheme.colors.primaryDark,
-                            fontFamily: appTheme.fonts.medium.fontFamily,
                             },
                         ]}
                         >
                         Connect
-                        </Text>
+                        </AppText>
                     </>
                     }
                     rightComponent={
@@ -106,7 +105,7 @@ const TopNav = () => {
                         <TouchableOpacity onPress={backAction}> 
                             <BackIcon width={22} height={22}/> 
                         </TouchableOpacity> 
-                        <Text style={[styles.title, {fontFamily: appTheme.fonts.medium.fontFamily, fontWeight: appTheme.fonts.medium.fontWeight}]}> Update Profile</Text> 
+                        <AppText variant='h2'> Update Profile</AppText> 
                     </View> 
                 </>
             )}
@@ -118,7 +117,7 @@ const TopNav = () => {
                         <TouchableOpacity onPress={backAction}> 
                             <BackIcon width={22} height={22}/> 
                         </TouchableOpacity> 
-                        <Text style={[styles.title, {fontFamily: appTheme.fonts.medium.fontFamily, fontWeight: appTheme.fonts.medium.fontWeight}]}> Notifications</Text> 
+                        <AppText variant='h2'> Notifications</AppText> 
                     </View> 
                 </>
             )}
@@ -130,7 +129,7 @@ const TopNav = () => {
                         <TouchableOpacity onPress={backAction}> 
                             <BackIcon width={22} height={22}/> 
                         </TouchableOpacity> 
-                        <Text style={[styles.title, {fontFamily: appTheme.fonts.medium.fontFamily, fontWeight: appTheme.fonts.medium.fontWeight}]}> Settings</Text> 
+                        <AppText variant='h2'> Settings</AppText> 
                     </View> 
                 </>
             )}
@@ -172,7 +171,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: 'center',
         justifyContent: 'space-between',
-        width: "60%",
+        width: "65%",
     },
     ContainerBox: {
         flexDirection: "row",

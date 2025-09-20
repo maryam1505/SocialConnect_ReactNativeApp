@@ -7,6 +7,7 @@ import { getAuth} from '@react-native-firebase/auth';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { useNavigation } from '@react-navigation/native';
+import AppText from '../components/AppText';
 
 type MenuItem = {
   id: string;
@@ -71,9 +72,9 @@ const SettingsScreen = () => {
         renderItem={renderItem}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListFooterComponent={
-          <View style={styles.logoutWrapper}>
-            <TouchableOpacity style={styles.item} onPress={handleLogOut}>
-              <Text style={styles.logoutText}>Log Out</Text>
+          <View>
+            <TouchableOpacity style={styles.logoutWrapper} onPress={handleLogOut}>
+              <AppText style={styles.logoutBtn}>Log Out</AppText>
             </TouchableOpacity>
           </View>
         }
@@ -104,20 +105,20 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   logoutWrapper: {
-    marginTop: 50,
+    marginTop: 100,
     paddingHorizontal: 16,
-    marginRight: 'auto',
-    marginLeft: 'auto',
+    width:"100%",
+    alignItems: 'center',
   },
-  logoutText: {
+  logoutBtn: {
     color: "#F3904F",
     fontSize: 16,
     textAlign: 'center',
     fontWeight: '500',
-    borderRadius: 25,
     borderColor: "#f3904f",
     borderWidth: 2,
-    paddingHorizontal: 100,
-    paddingVertical: 7,
+    paddingVertical: 14,
+    width: "80%",
+    borderRadius: 30,
   },
 });

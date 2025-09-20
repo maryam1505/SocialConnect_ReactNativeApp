@@ -20,25 +20,30 @@ export type CustomFonts = {
   light: FontStyle;
   thin: FontStyle;
   bold: FontStyle;
+  semiBold: FontStyle;
   heavy: FontStyle;
 };
 
 export const customFonts : CustomFonts = {
-  regular: {
-    fontFamily: 'Poppins-Regular',
-    fontWeight: 'normal',
-  },
-  medium: {
-    fontFamily: 'Poppins-Medium',
-    fontWeight: '500',
+  thin: {
+    fontFamily: 'Poppins-Thin',
+    fontWeight: '200',
   },
   light: {
     fontFamily: 'Poppins-Light',
     fontWeight: '300',
   },
-  thin: {
-    fontFamily: 'Poppins-Thin',
-    fontWeight: '200',
+  regular: {
+    fontFamily: 'Poppins-Regular',
+    fontWeight: '400',
+  },
+  medium: {
+    fontFamily: 'Poppins-Medium',
+    fontWeight: '500',
+  },
+  semiBold: {
+    fontFamily: "Poppins-SemiBold",
+    fontWeight: "600",
   },
   bold: {
     fontFamily: "Poppins-Bold",

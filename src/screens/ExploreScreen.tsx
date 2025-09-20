@@ -1,10 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
+import AppText from '../components/AppText'
 
 const ExploreScreen = () => {
   return (
     <View>
-      <Text>ExploreScreen</Text>
+      <AppText>ExploreScreen</AppText>
     </View>
   )
 }

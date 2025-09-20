@@ -1,5 +1,6 @@
 import { StyleProp, StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import AppText from './AppText';
 
 interface PrimaryButtonProps {
   title: string;
@@ -12,7 +13,7 @@ const PrimaryButton: React.FC<PrimaryButtonProps> = ({ title, onPress, accessibi
   return (
     <TouchableOpacity onPress={onPress} accessibilityLabel={accessibilityLabel} style={[styles.touchableWrapper, style]}>
       <LinearGradient colors={['#200122', '#108DC7']} style={styles.button}>
-        <Text style={styles.buttonText}>{title}</Text>
+        <AppText variant='h4' style={{color: "#fff"}}>{title}</AppText>
       </LinearGradient>
     </TouchableOpacity>
   );

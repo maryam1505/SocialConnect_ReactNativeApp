@@ -5,7 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { getApp } from '@react-native-firebase/app';
 import { getAuth } from '@react-native-firebase/auth';
-import { collection, doc, getDoc, getFirestore, increment, onSnapshot, orderBy, query, runTransaction, serverTimestamp, updateDoc } from '@react-native-firebase/firestore';
+import { collection, doc, getDoc, getFirestore, increment, onSnapshot, orderBy, query, runTransaction, serverTimestamp } from '@react-native-firebase/firestore';
 import SendIcon from '../../assets/icons/send.svg';
 import CloseIcon from '../../assets/icons/close.svg';
 import { Share } from 'react-native';
@@ -14,6 +14,9 @@ import { RootStackParamList } from '../../App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import PrimaryButton from './PrimaryButton';
+import { useTheme } from '../context/ThemeContext';
+import AppText from './AppText';
+
 
 export interface Post {
   id: string;
@@ -42,6 +45,7 @@ interface UserData {
 const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { appTheme } = useTheme(); 
   const [isLiked, setIsLiked] = useState(false);
   const [likes, setLikes] = useState(0);
   const [showComments, setShowComments] = useState(false);
@@ -260,25 +264,22 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.name}>{post.name}</Text>
+            <AppText variant='h4'>{post.name}</AppText>
             {/* <Text style={styles.time}>{post.username}</Text> */}
-            <Text style={styles.time}>
+            <AppText variant='caption'>
               {post?.createdAt
                 ? formatDistanceToNow(post.createdAt.toDate(), {
                   addSuffix: false,
                 })
                 : 'Just now'}
-            </Text>
+            </AppText>
           </View>
         </TouchableOpacity>
-            <PrimaryButton onPress={()=> {{}}} title='Follow' style={{width:"30%", paddingVertical:10, }}/>
-        <View>
-          
-        </View>
+          <PrimaryButton onPress={()=> {{}}} title='Follow' style={{width:"30%", }}/>
       </View>
 
       {/* Post Text */}
-      {post.text ? <Text style={styles.text}>{post.text}</Text> : null}
+      {post.text ? <AppText variant='small' style={styles.text}>{post.text}</AppText> : null}
 
       {/* Post Image */}
       {post.imageUrl ? (
@@ -308,19 +309,19 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                 color={isLiked ? 'red' : '#444'}
               />
             </Animated.View>
-            <Text style={styles.engageText}>{likes}</Text>
+            <AppText style={styles.engageText}>{likes}</AppText>
           </TouchableOpacity>
 
         {/* ## Comments ## */}
         <TouchableOpacity style={styles.engageItem} onPress={() => setShowComments(true)}>
           <Ionicons name="chatbubble-outline" size={20} color="#444" />
-          <Text style={styles.engageText}>{commentCount}</Text>
+          <AppText style={styles.engageText}>{commentCount}</AppText>
         </TouchableOpacity>
 
         {/* ## Share ## */}
         <TouchableOpacity style={styles.engageItem} onPress={() => sharePost(post)}>
           <Ionicons name="share-social-outline" size={20} color="#444" />
-          <Text style={styles.engageText}>{sharesCount}</Text>
+          <AppText style={styles.engageText}>{sharesCount}</AppText>
         </TouchableOpacity>
         
       </View>
@@ -332,16 +333,16 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
             {/* ## Header ## */}
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Comments</Text>
+              <AppText variant='h3'>Comments</AppText>
               <TouchableOpacity onPress={()=>setShowComments(false)}>
-                <CloseIcon width={50} height={50} />
+                <CloseIcon width={12} height={12} />
               </TouchableOpacity>
             </View>
           
             {/* ## Comments List ## */}
             <FlatList data={comments} keyExtractor={item => item.id}
             renderItem={({item}) => (
-              <View style={{ marginVertical: 2, paddingHorizontal: 7, paddingVertical: 12,}}>
+              <View style={{ marginVertical: 8, paddingHorizontal: 7, paddingVertical: 12, borderBottomColor: '#eee', borderBottomWidth: 1}}>
                 <View style={{ flexDirection: 'row', alignItems:"center", }}>
                   {/* Avatar */}
                     <View style={{ width: "17%", alignItems: "center" }}>
@@ -358,54 +359,50 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                         }}
                       />
                     </View>
+
                   {/* Content Container */}
-                  <View style={{flex: 1, width: "85%", }}>
+                  <View style={{flex: 1, width: "85%" }}>
+
                     {/* Header with name, username, and time */}
                     <View style={{  flexDirection: 'row', alignItems: 'center',}}>
+
                       <View>
-                        <Text style={{ fontWeight: '600', marginRight: 5 }}>
-                          {item.name ?? 'Unknown'}
-                        </Text>
-                        <Text style={{ color: 'gray', fontSize: 12 }}>
-                          {item.username ?? '@anonymous'}
-                        </Text>
+                        <AppText> {item.name ?? 'Unknown'} </AppText>
+                        <AppText variant='caption'> {item.username ?? '@anonymous'} </AppText>
                       </View>
+
                       <View style={{ flex: 1 }} />
+
                       {/* Time */}
-                      <Text style={{ color: 'gray', fontSize: 11, marginTop: 4 }}>
+                      <AppText variant='caption'>
                         {item.createdAt?.toDate
-                          ? formatDistanceToNow(item.createdAt.toDate(), { addSuffix: true })
+                          ? formatDistanceToNow(item.createdAt.toDate(), { addSuffix: false })
                           : 'Just now'}
-                      </Text>
+                      </AppText>
+
                     </View>
-                    <View style={{ marginTop: 7,}}>
-                      {/* Comment text */}            
-                          <Text style={{ 
-                            fontSize: 14,
-                            lineHeight: 20,
-                            color: '#333'
-                          }}>
-                            {item.text}
-                          </Text>
-                    </View>
+
                   </View>
                 </View>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <View style={{width: "15%"}}/>
 
+                {/* Comment text */}
+                <View style={{ marginTop: 9, marginStart: 4,}}>
+                  <AppText variant='small' secondary style={{ lineHeight: 20, marginRight: 7,}}>
+                    {item.text}
+                  </AppText>
                 </View>
+
               </View>
             )}
             ListEmptyComponent={
               <View style={{ paddingVertical: 20, alignItems: 'center' }}>
-                <Text style={{ color: 'gray', fontSize: 14 }}>No comments yet</Text>
+                <AppText variant='caption'>No comments yet</AppText>
               </View>
             }
             />
 
-            {/* ## Add new comment ## */}
-          <View
-            style={styles.commentInputRow}>
+          {/* ## Add new comment ## */}
+          <View style={styles.commentInputRow}>
             <TextInput
               placeholder="Add a comment..."
               value={commentText}
@@ -457,16 +454,8 @@ const styles = StyleSheet.create({
     height: "100%", 
     borderRadius: 25,
   },
-  name: { 
-    fontWeight: 'bold', 
-    fontSize: 16 
-  },
-  time: { 
-    color: 'gray', 
-    fontSize: 12 
-  },
   
-  /* ## Post Image Style ## */
+  /* ## Post Image, text Style ## */
   imageCard: {
     width:"100%", 
     height: 400, 
@@ -479,7 +468,6 @@ const styles = StyleSheet.create({
     borderRadius: 10, 
   },
   text: { 
-    fontSize: 14,
     color: '#333', 
     marginTop: 10, 
     marginBottom: 10, 
@@ -501,7 +489,6 @@ const styles = StyleSheet.create({
   },
   engageText: { 
     marginLeft: 6, 
-    fontSize: 13, 
     color: '#444' 
   },
 
@@ -514,19 +501,15 @@ const styles = StyleSheet.create({
   modalContent: {
     height: '70%',
     backgroundColor: '#fff',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    padding: 12,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 17,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
-  },
-  modalTitle: {
-    fontWeight: "bold",
-    fontSize: 18,
   },
   commentInputRow: {
     flexDirection: 'row',

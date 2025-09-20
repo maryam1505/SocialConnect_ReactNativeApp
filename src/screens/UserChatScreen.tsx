@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
+import AppText from '../components/AppText';
 
 type UserProfileRouteProp = RouteProp<RootStackParamList, 'UserProfile'>;
 
@@ -10,8 +11,8 @@ const UserChatScreen: React.FC = () => {
     const { userId } = route.params;
   return (
     <View>
-      <Text>UserChatScreen</Text>
-      <Text>User ID: {userId}</Text>
+      <AppText>UserChatScreen</AppText>
+      <AppText>User ID: {userId}</AppText>
     </View>
   )
 }

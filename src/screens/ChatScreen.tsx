@@ -1,10 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
+import AppText from '../components/AppText'
 
 const ChatScreen = () => {
   return (
     <View>
-      <Text>ChatScreen</Text>
+      <AppText>ChatScreen</AppText>
     </View>
   )
 }

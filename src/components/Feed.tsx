@@ -1,16 +1,15 @@
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import PostCard, { Post } from './PostCard';
 import { collection, doc, getDoc, getFirestore, onSnapshot, orderBy, query, where } from '@react-native-firebase/firestore';
-import { useTheme } from '../context/ThemeContext';
 import { getApp } from '@react-native-firebase/app';
 import { getAuth } from '@react-native-firebase/auth';
 import FeedLoader from './FeedLoader';
+import AppText from './AppText';
 
 
 
 const Feed: React.FC = () => {
-  const { appTheme } = useTheme();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -75,8 +74,6 @@ const Feed: React.FC = () => {
   }, [currentUserId]);
 
 
-
-
   return (
     <View style={{ flex: 1 }}>
       {loading ? (
@@ -88,7 +85,7 @@ const Feed: React.FC = () => {
           renderItem={({ item }) => <PostCard post={item} />}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Text>No posts yet. Be the first to post!</Text>
+              <AppText secondary variant='small'>No posts yet. Be the first to post!</AppText>
             </View>
           }
         />
@@ -100,13 +97,6 @@ const Feed: React.FC = () => {
 export default Feed;
 
 const styles = StyleSheet.create({
-  loaderContainer: {
-    backgroundColor: '#eee',
-    opacity: 0.5,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flex: 1,
-  },
   empty: {
     flex: 1,
     justifyContent: 'center',

@@ -12,6 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import PrimaryButton from '../components/PrimaryButton';
 import UserFeed from '../components/UserFeed';
 import FeedLoader from '../components/FeedLoader';
+import AppText from "../components/AppText"; 
 
 type UserProfile = {
   name?: string;
@@ -67,7 +68,6 @@ const ProfileScreen = () => {
   
 
   /* ## Manually Count the totalPosts of Current User ## */
-
   useEffect(() => {
     if (!currentUser) return;
 
@@ -83,30 +83,50 @@ const ProfileScreen = () => {
   return (
     <>
       {loading ? (
-            <FeedLoader visible={loading} />
+        <FeedLoader visible={loading} />
         ): (
           <>
+          {/* Top navigation bar */}
             <TopNav />
       
             <View style={styles.container}>
               {profile ? (
+                /* ## Displaying Profile Data  ## */
                 <View style={styles.profileBox}>
                     {profile.avatar ? (
                       <Image source={{ uri: profile.avatar }} style={styles.avatar} />
                     ) : (
                       <View style={[styles.avatar, { backgroundColor: '#ccc' }]} />
                     )}
-                    <Text style={styles.name}>{profile.name || 'Unknown User'}</Text>
-                    <Text style={styles.email}>{profile.username || '@unknown_user'}</Text>
-                    <Text style={styles.bio}>{profile.bio || 'No bio available'}</Text>
-                    <Text style={styles.posts}>Posts: {profile.totalPosts || 0}</Text>
+                    {/* Name */}
+                    <AppText variant="h2">
+                      {profile.name || "Unknown User"}
+                    </AppText>
+
+                    {/* Username */}
+                    <AppText variant="small" secondary>
+                      {profile.username ? `${profile.username}` : "@unknown_user"}
+                    </AppText>
+
+                    {/* Bio */}
+                    <AppText variant="body" style={{ fontStyle: "italic", marginTop: 8 }}>
+                      {profile.bio || "No bio available"}
+                    </AppText>
+
+                    {/* Posts */}
+                    <AppText variant="small" style={{ marginTop: 10 }}>
+                      Posts: {profile.totalPosts || 0}
+                    </AppText>
                 </View>
               ) : (
+
+                /* Dummy Data if Profile is not available */
                 <View style={{flexDirection: 'column', alignItems: 'center'}}>
                   <View style={[styles.avatar, { backgroundColor: '#ccc' }]} />
-                  <Text style={styles.name}>Unknown User</Text>
-                  <Text style={styles.name}>{currentUser?.uid}</Text>
-                  <Text style={styles.email}>No email available</Text>
+                  <AppText variant="h2">Unknown User</AppText>
+                  <AppText variant="small" secondary>
+                    @unknown_user
+                  </AppText>
                 </View>
               )}
                 
@@ -129,10 +149,6 @@ const styles = StyleSheet.create({
     padding: 10,
     justifyContent: 'space-between',
   },
-  title: {
-    fontSize: 18,
-    fontWeight: '500',
-  },
   profileBox: {
     alignItems: 'center',
     marginTop: 20,
@@ -143,27 +159,4 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginBottom: 15,
   },
-  name: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  email: {
-    fontSize: 14,
-    color: '#555',
-    marginVertical: 5,
-  },
-  bio: {
-    fontSize: 14,
-    fontStyle: 'italic',
-    marginVertical: 10,
-  },
-  posts: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginTop: 10,
-  },
-  // profileBorder: {
-  //   borderColor: "#000",
-  //   backgroundColor: "#000",
-  // },
 });

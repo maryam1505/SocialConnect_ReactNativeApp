@@ -3,6 +3,7 @@ import React from 'react'
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
 import PrimaryButton from '../components/PrimaryButton';
+import AppText from '../components/AppText';
 
 type UserProfileRouteProp = RouteProp<RootStackParamList, 'UserProfile'>;
 
@@ -15,8 +16,8 @@ const UserProfileScreen: React.FC = () => {
 
   return (
     <View>
-      <Text>User Profile</Text>
-      <Text>User ID: {userId}</Text>
+      <AppText>User Profile</AppText>
+      <AppText>User ID: {userId}</AppText>
         <PrimaryButton onPress={handleFollow} title='Follow' style={{width: '30%'}}/>
     </View>
   );

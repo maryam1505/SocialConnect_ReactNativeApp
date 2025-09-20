@@ -10,6 +10,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import GradientInput from '../components/GradientInput';
 import { useTheme } from '../context/ThemeContext';
+import AppText from '../components/AppText';
 
 
 type OnBoardingScreenNavigationProp = NativeStackNavigationProp<
@@ -91,7 +92,7 @@ const LoginScreen = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: appTheme.colors.background },]}>
-      <Text style={[ styles.title, { color: appTheme.colors.textPrimary, fontFamily: appTheme.fonts.bold.fontFamily }, ]}>Sign In</Text>
+      <AppText variant='h1' style={styles.title}>Sign In</AppText>
       <View style={styles.formContainer}>
 
         {/* Email Input */}
@@ -117,7 +118,7 @@ const LoginScreen = () => {
 
         {/* Forgot Password */}
         <TouchableOpacity onPress={handleForgotPassword}>
-          <Text style={[ styles.forgotPassword, { color: appTheme.colors.primaryLight }, ]}>Forgot your password?</Text>
+          <AppText style={[ styles.forgotPassword, { color: appTheme.colors.primaryLight }, ]}>Forgot your password?</AppText>
         </TouchableOpacity>
 
         {/* Sign In Button */}
@@ -129,9 +130,9 @@ const LoginScreen = () => {
 
         {/* Sign Up Link */}
         <View style={styles.signupContainer}>
-          <Text style={{ color: appTheme.colors.textSecondary }}>Don’t have an account?{' '}</Text>
+          <AppText secondary variant='caption'>Don’t have an account?{' '}</AppText>
           <TouchableOpacity onPress={handlePress}>
-            <Text style={[ styles.signupText, { color: appTheme.colors.primaryLight }, ]}>Sign up</Text>
+            <AppText variant='h2' style={ { color: appTheme.colors.primaryLight }}>Sign up</AppText>
           </TouchableOpacity>
         </View>
       </View>
@@ -150,8 +151,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    fontWeight: '500',
-    fontSize: 40,
     lineHeight: 56,
     textAlign: 'center',
     marginBottom: 40,
@@ -159,6 +158,11 @@ const styles = StyleSheet.create({
   formContainer: {
     width: '100%',
     padding: 10,
+  },
+  signupContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 30,
   },
   errorText: {
     color: 'red',
@@ -169,13 +173,5 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     textDecorationLine: 'underline',
     marginBottom: 20,
-  },
-  signupContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 30,
-  },
-  signupText: {
-    fontWeight: '700',
   },
 });
