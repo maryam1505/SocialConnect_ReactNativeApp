@@ -20,53 +20,61 @@ const Feed: React.FC = () => {
 
 /* ## Fetching Posts Except the current User ## */
   useEffect(() => {
+    if (!currentUserId) {
+      setLoading(false);
+      return;
+    }
 
     const postRef = collection(db, 'posts');
-    const q = query(postRef, where("userId", "!=", currentUserId), orderBy('userId'), orderBy('createdAt', 'desc'));
+    const q = query(postRef, where("userId", "!=", currentUserId), orderBy('userId'));
     const unsubscribe = onSnapshot(q, async snap => {
+      try {
+        if (snap.empty) {
+          setPosts([]);
+        } else {
+          const rawPosts = snap.docs.map((docSnap : any) => ({
+            id: docSnap.id,
+            ...(docSnap.data() as Omit<Post, "id">),
+          }));
 
-      if (snap.empty) {
-        setPosts([]); 
+          const userIds: string[] = Array.from(
+            new Set(rawPosts.map((p: any) => p.userId as string))
+          );
+    
+          const userDocs = await Promise.all(
+            userIds.map((uid: string) => getDoc(doc(db, 'users', uid)))
+          );
+    
+          const userCache: Record<string, any> = {};
+          userDocs.forEach(userSnap =>{
+            if (userSnap.exists()) userCache[userSnap.id] = userSnap.data(); 
+          });
+
+          const fetchedPosts: Post[] = rawPosts.map((post: any) => {
+            const user = userCache[post.userId];
+            return {
+              id: post.id,
+              userId: post.userId,
+              text: post.text,
+              imageUrl: post.imageUrl,
+              likes: post.likes,
+              comments: post.comments,
+              shares: post.shares,
+              createdAt: post.createdAt,
+              name: user?.name ?? "Unknown",
+              username: user?.username ?? "@unknown",
+              avatar: user?.avatar ?? null,
+            };
+          });
+          const randomPost = fetchedPosts.sort(() => Math.random() - 0.5);
+          setPosts(randomPost);
+        }
+        
+      } catch (error: any) {
+        console.log("error", error);
+      } finally {
         setLoading(false);
-        return;
       }
-      
-      const rawPosts = snap.docs.map((docSnap : any) => ({
-        id: docSnap.id,
-        ...(docSnap.data() as Omit<Post, "id">),
-      }));
-
-      const userIds: string[] = Array.from(
-        new Set(rawPosts.map((p: any) => p.userId as string))
-      );
-
-      const userDocs = await Promise.all(
-        userIds.map((uid: string) => getDoc(doc(db, 'users', uid)))
-      );
-
-      const userCache: Record<string, any> = {};
-      userDocs.forEach(userSnap =>{
-        if (userSnap.exists()) userCache[userSnap.id] = userSnap.data(); 
-      });
-
-      const fetchedPosts: Post[] = rawPosts.map((post: any) => {
-        const user = userCache[post.userId];
-        return {
-          id: post.id,
-          text: post.text,
-          imageUrl: post.imageUrl,
-          likes: post.likes,
-          comments: post.comments,
-          shares: post.shares,
-          createdAt: post.createdAt,
-          name: user?.name ?? "Unknown",
-          username: user?.username ?? "@unknown",
-          avatar: user?.avatar ?? null,
-        };
-      });
-      const randomPost = fetchedPosts.sort(() => Math.random() - 0.5);
-      setPosts(randomPost);
-      setLoading(false);
     });
 
     return () => unsubscribe();

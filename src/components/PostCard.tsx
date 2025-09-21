@@ -1,11 +1,11 @@
-import { Alert, FlatList, Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, Image, Modal, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import { formatDistanceToNow } from 'date-fns';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { getApp } from '@react-native-firebase/app';
 import { getAuth } from '@react-native-firebase/auth';
-import { collection, doc, getDoc, getFirestore, increment, onSnapshot, orderBy, query, runTransaction, serverTimestamp } from '@react-native-firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, getFirestore, increment, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc } from '@react-native-firebase/firestore';
 import SendIcon from '../../assets/icons/send.svg';
 import CloseIcon from '../../assets/icons/close.svg';
 import { Share } from 'react-native';
@@ -16,10 +16,12 @@ import { useNavigation } from '@react-navigation/native';
 import PrimaryButton from './PrimaryButton';
 import { useTheme } from '../context/ThemeContext';
 import AppText from './AppText';
+import SecondaryButton from './SecondaryButton';
 
 
 export interface Post {
   id: string;
+  userId: string;
   name: string;
   username: string;
   avatar: string | number;
@@ -53,11 +55,11 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const [commentText, setCommentText] = useState('');
   const [commentCount, setCommentCount] = useState(0);
   const [sharesCount, setSharesCount] = useState(0);
+  const [isFollowingUser, setIsFollowingUser] = useState(false);
 
   const app = getApp();
   const db = getFirestore(app);
-
-  const userId = getAuth(app).currentUser?.uid;
+  const currentUserId = getAuth(app).currentUser?.uid;
 
   /* -------------------------------- ## Handling Likes ## -------------------------------- */
 
@@ -69,8 +71,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
   /* ## If the User already liked ## */
   useEffect(()=>{
-    if(!userId) return;
-    const likeRef = doc(db, 'posts', post.id, 'likes', userId);
+    if(!currentUserId) return;
+    const likeRef = doc(db, 'posts', post.id, 'likes', currentUserId);
     const unsubscribe = onSnapshot(likeRef, (docSnap) => {
       if (docSnap.exists()) {
         setIsLiked(true);
@@ -81,7 +83,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
     return unsubscribe;
 
-  }, [post.id, userId]);
+  }, [post.id, currentUserId]);
 
   /* ## Fetch Realtime Like Counts ## */
   useEffect(() => {
@@ -99,10 +101,11 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
   /* ## Toggle like System ## */
   const toggleLike = async (postId: string, isLiked: boolean) => {
-    const userId = getAuth(getApp()).currentUser?.uid;
-    if (!userId) return;
 
-    const likeRef = doc(db, 'posts', post.id, 'likes', userId);
+    const currentUserId = getAuth(getApp()).currentUser?.uid;
+    if (!currentUserId) return;
+
+    const likeRef = doc(db, 'posts', post.id, 'likes', currentUserId);
     const postRef = doc(db, 'posts', postId);
 
     await runTransaction(db, async transaction => {
@@ -138,7 +141,6 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
   /* -------------------------------- ## Handling Comments ## -------------------------------- */
 
-
   /* ## Fetch Realtime Comments ## */
   useEffect(() => {
     const CommentRef = collection(db,'posts', post.id,'comments');
@@ -149,8 +151,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           const data = docSnap.data();
           let userData: UserData | undefined;
 
-          if( data.userId ) {
-            const userDoc = await getDoc(doc(db, "users", data.userId));
+          if( data.currentUserId ) {
+            const userDoc = await getDoc(doc(db, "users", data.currentUserId));
             if (userDoc.exists()) {
               userData = userDoc.data() as UserData;
             }
@@ -171,6 +173,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   /* ## Fetch Realtime Comment Counts ## */
   useEffect(() => {
     const postRef = doc(db, 'posts', post.id);
+    
 
     const unsubscribe = onSnapshot(postRef, docSnap => {
       if (docSnap.exists()) {
@@ -184,7 +187,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
   /* ## Add Comment System ## */
   const addComment = async() => {
-    if (!userId || !commentText.trim()) return;
+    if (!currentUserId || !commentText.trim()) return;
     const user = getAuth(app).currentUser;
 
     const commentRef = doc(collection(db, 'posts', post.id, 'comments'));
@@ -192,7 +195,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
     await runTransaction(db, async transaction => {
       transaction.set(commentRef, {
-        userId: user?.uid,
+        currentUserId: user?.uid,
         username: user?.displayName ?? 'Anonymous',
         text: commentText,
         createdAt: serverTimestamp(),
@@ -248,12 +251,96 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     return unsubscribe;
   }, [post.id]);
 
+  /* -------------------------------- ## Handling Follow/UnFollow ## -------------------------------- */
+  useEffect(() => {
+    if (!currentUserId || !post.userId) return;
+    if (currentUserId === post.userId) return;
 
+    const followRef = doc(db, "followers", currentUserId, "userFollowing", post.userId);
+
+    const unsubscribe = onSnapshot(followRef, snap => {
+      setIsFollowingUser(snap.exists());
+    });
+
+    return unsubscribe;
+  }, [currentUserId, post.userId]);
+
+  /* ## Follow user System ## */
+  const followUser = async (currentUserId: string, targetUserId: string) => {
+    /* ## Prevent Self Follow ## */
+    if (currentUserId === targetUserId) return;
+
+    const currentUserFollowingRef = doc(db, 'followers', currentUserId, 'userFollowing', targetUserId);
+    const targetUserFollowersRef = doc(db, 'followers', targetUserId, 'userFollowers', currentUserId);
+
+    await setDoc(currentUserFollowingRef, { createdAt: Date.now() });
+    await setDoc(targetUserFollowersRef, { createdAt: Date.now() });
+
+    // update counters
+    await updateDoc(doc(db, 'users', currentUserId), { followingCount: increment(1) });
+    await updateDoc(doc(db, 'users', targetUserId), { followersCount: increment(1) });
+  };
+
+  /* ## Unfollow user System ## */
+  const unfollowUser = async (currentUserId: string, targetUserId: string) => {
+    if (currentUserId === targetUserId) return;
+
+    const currentUserFollowingRef = doc(db, 'followers', currentUserId, 'userFollowing', targetUserId);
+    const targetUserFollowersRef = doc(db, 'followers', targetUserId, 'userFollowers', currentUserId);
+
+    const currentUserRef = doc(db, 'users', currentUserId);
+    const targetUserRef = doc(db, 'users', targetUserId);
+
+    try{
+      await Promise.all([
+        deleteDoc(currentUserFollowingRef),
+        deleteDoc(targetUserFollowersRef),
+      ]);
+
+      await runTransaction(db, async (transaction) => {
+        const currentUserSnap = await transaction.get(currentUserRef);
+        const targetUserSnap = await transaction.get(targetUserRef);
+
+        if(currentUserSnap.exists()) {
+          const currentUserData = currentUserSnap.data() as { followingCount?: number };
+          const followingCount = currentUserData?.followingCount ?? 0;
+
+          if(followingCount > 0) {
+            transaction.update(currentUserRef, { followingCount: followingCount - 1 });
+          }
+        }
+
+        if(targetUserSnap.exists()) {
+          const targetUserData = targetUserSnap.data() as { followersCount?: number };
+          const followersCount = targetUserData?.followersCount ?? 0;
+          if (followersCount > 0) {
+            transaction.update(targetUserRef, { followersCount: followersCount - 1 });
+          }
+        }
+      });
+    } catch (error) {
+      console.error("Error unfollow user:", error);
+    }
+
+  };
+
+  /* ## Handle Follow Toggle ## */
+  const handleFollowToggle = async (userId: string) => {
+    if (!currentUserId) return;
+
+    if(isFollowingUser) {
+      await unfollowUser(currentUserId, userId);
+    } else {
+      await followUser(currentUserId, userId);
+    }
+  };
+
+  /* -------------------------------- ## Screen UI ## -------------------------------- */
   return (
     <View style={styles.card}>
       {/* User Info */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.avatarHeader} onPress={() => navigation.navigate('UserProfile', { userId: post.id })}>
+        <TouchableOpacity style={styles.avatarHeader} onPress={() => navigation.navigate('UserProfile', { userId: post.userId })}>
           <View style={styles.avatarContainer}>
             <Image source={
                 typeof post.avatar === 'string'
@@ -275,7 +362,9 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             </AppText>
           </View>
         </TouchableOpacity>
-          <PrimaryButton onPress={()=> {{}}} title='Follow' style={{width:"30%", }}/>
+          {!isFollowingUser && (
+            <PrimaryButton onPress={() => handleFollowToggle(post.userId)} title="Follow" style={{width: '35%'}}/>
+          )}
       </View>
 
       {/* Post Text */}

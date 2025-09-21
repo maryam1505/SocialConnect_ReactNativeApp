@@ -91,10 +91,26 @@ const TopNav = () => {
                     showBack
                     title="Profile"
                     onBack={backAction}
-                    showSettings
-                    onSettings={handleSettings}
                     styles={styles}
                     appTheme={appTheme}
+                    showSettings
+                    onSettings={handleSettings}
+                />
+            )}
+
+            {/* ## UserProfile Screen Header bar ## */}
+            {route.name === 'UserProfile' && (
+                <Header
+                    showBack
+                    title="User Profile"
+                    onBack={backAction}
+                    styles={styles}
+                    appTheme={appTheme}
+                    rightComponent={
+                    <TouchableOpacity onPress={handleBellIcon}>
+                        <BellIcon width={22} height={22} />
+                    </TouchableOpacity>
+                    }
                 />
             )}
 

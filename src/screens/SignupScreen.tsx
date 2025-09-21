@@ -157,7 +157,7 @@ const SignupScreen = () => {
         <View style={styles.signupContainer}>
           <AppText secondary variant='small'>Already have an account?{' '}</AppText>
           <TouchableOpacity onPress={handlePress}>
-            <AppText variant='h2' style={{ color: appTheme.colors.primaryLight }}>Sign in</AppText>
+            <AppText variant='small' style={{ color: appTheme.colors.primaryLight }}>Sign in</AppText>
           </TouchableOpacity>
         </View>
       </View>

@@ -127,12 +127,12 @@ const LoginScreen = () => {
           onPress={formik.handleSubmit}
           accessibilityLabel="Submitting Login Form"
         />
-
+        
         {/* Sign Up Link */}
         <View style={styles.signupContainer}>
           <AppText secondary variant='caption'>Don’t have an account?{' '}</AppText>
           <TouchableOpacity onPress={handlePress}>
-            <AppText variant='h2' style={ { color: appTheme.colors.primaryLight }}>Sign up</AppText>
+            <AppText variant='small' style={ { color: appTheme.colors.primaryLight }}>Sign up</AppText>
           </TouchableOpacity>
         </View>
       </View>

@@ -164,6 +164,10 @@ const UpdateProfileScreen = () => {
 
   return (
     <>
+    {formik.isSubmitting && (
+      <FeedLoader visible />
+    )}
+    
     {loading ? (
       <FeedLoader visible={loading} />
     ) : (
@@ -220,7 +224,7 @@ const UpdateProfileScreen = () => {
             error={formik.touched.bio ? formik.errors.bio : ''}
           />
   
-          <PrimaryButton title="Save Changes" onPress={formik.handleSubmit} />
+          <PrimaryButton title={formik.isSubmitting ? "Saving Changes...": "Save Changes"} onPress={formik.handleSubmit} />
   
         </ScrollView>
       </>

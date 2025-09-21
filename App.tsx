@@ -7,7 +7,7 @@ import { getAuth, onAuthStateChanged } from '@react-native-firebase/auth';
 import { ThemeProvider, useTheme } from "./src/context/ThemeContext";
 import messaging from '@react-native-firebase/messaging';
 import { doc, getFirestore, setDoc } from '@react-native-firebase/firestore';
-import { Alert } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { checkOnboardingSeen } from './src/utils/storage';
 import Loader from './src/components/Loader';
 import { createNavigationContainerRef } from '@react-navigation/native';
@@ -156,32 +156,36 @@ function MainApp() {
   if (initializing) return <Loader />;
 
   return (
-    <NavigationContainer theme={navigationTheme} fallback={<Loader/>}>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {!onboardingSeen && !user && (
-          <Stack.Screen name="OnBoarding" component={OnBoardingScreen} />
-        )}
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
 
-        {!user && (
-          <>
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Signup" component={SignupScreen} />
-          </>
-        )}
-        
-        <Stack.Screen name="Home" component={HomeScreen}  />
-        <Stack.Screen name="NewPost" component={NewPostScreen} />
-        <Stack.Screen name="Profile" component={ProfileScreen} />
-        <Stack.Screen name="UserProfile" component={UserProfileScreen} />
-        <Stack.Screen name="UpdateProfile" component={UpdateProfileScreen} />
-        <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
-        <Stack.Screen name="Settings" component={SettingsScreen} />
-        <Stack.Screen name="Notification" component={NotificationScreen} />
-        <Stack.Screen name="Explore" component={ExploreScreen} />
-        <Stack.Screen name="Chat" component={ChatScreen} />
-        <Stack.Screen name="UserChat" component={UserChatScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+      <NavigationContainer theme={navigationTheme} fallback={<Loader/>}>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          {!onboardingSeen && !user && (
+            <Stack.Screen name="OnBoarding" component={OnBoardingScreen} />
+          )}
+
+          {!user && (
+            <>
+              <Stack.Screen name="Login" component={LoginScreen} />
+              <Stack.Screen name="Signup" component={SignupScreen} />
+            </>
+          )}
+          
+          <Stack.Screen name="Home" component={HomeScreen}  />
+          <Stack.Screen name="NewPost" component={NewPostScreen} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="UserProfile" component={UserProfileScreen} />
+          <Stack.Screen name="UpdateProfile" component={UpdateProfileScreen} />
+          <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+          <Stack.Screen name="Settings" component={SettingsScreen} />
+          <Stack.Screen name="Notification" component={NotificationScreen} />
+          <Stack.Screen name="Explore" component={ExploreScreen} />
+          <Stack.Screen name="Chat" component={ChatScreen} />
+          <Stack.Screen name="UserChat" component={UserChatScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+
+    </KeyboardAvoidingView>
   );
 }
 export default function App() {

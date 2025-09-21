@@ -1,6 +1,7 @@
 import { ActivityIndicator, Modal, StyleSheet, View } from "react-native";
 
 const FeedLoader = ({ visible }: { visible: boolean }) => {
+  if (!visible) return null;
   return (
     <Modal transparent animationType="none" visible={visible}>
       <View style={styles.overlay}>

@@ -1,8 +1,8 @@
-import { ActivityIndicator, Alert, Image, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, TextInput, TouchableWithoutFeedback, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { supabase } from '../../supabase';
 import { addDoc, collection, doc, getFirestore, increment, serverTimestamp, updateDoc } from '@react-native-firebase/firestore';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import FootNav from '../components/FootNav';
 import TopNav from '../components/TopNav';
@@ -12,6 +12,7 @@ import PrimaryButton from '../components/PrimaryButton';
 import { RootStackParamList } from '../../App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
+import FeedLoader from '../components/FeedLoader';
 
 type ScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -22,12 +23,21 @@ const NewPostScreen = () => {
   const [text, setText] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const { appTheme } = useTheme();
 
   const app = getApp();
    
   const navigation = useNavigation<ScreenNavigationProp>();
 
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", () => setKeyboardVisible(true));
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => setKeyboardVisible(false));
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   /* ## Pick Image From Gallery ## */
   const pickImage = async () => {
@@ -119,48 +129,57 @@ const NewPostScreen = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color={appTheme.colors.primaryDark} />
-      </View>
-    );
-  }
-
   return (
-    <>
-      <TopNav />
-      {/* ## Screen's  Main Container ## */}
-      <View style={styles.container}>
-        <TextInput
-          style={styles.input}
-          placeholder="What is in your mind?"
-          multiline
-          value={text}
-          onChangeText={setText}
-        />
-        {imageUri && (
-          <Image source={{ uri: imageUri }} style={styles.imagePreview} />
-        )}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 
-        {/* ## Action Buttons ## */}
-        <View style={styles.actions}>
-          <PrimaryButton
-            onPress={pickImage}
-            accessibilityLabel="Pick Image from Gallery"
-            title="Pick Image"
-            style={styles.actionBtn}
-          />
-          <PrimaryButton
-            onPress={handlePost}
-            title={loading ? 'Posting...' : 'Post'}
-            accessibilityLabel="Posting a post"
-            style={styles.actionBtn}
-          />
+        <View style={{flex:1}}>
+          {loading ? (
+            <FeedLoader visible={loading} />
+          ) : (
+            <>
+              <TopNav />
+              {/* ## Screen's  Main Container ## */}
+              <View style={styles.container}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="What is in your mind?"
+                  multiline
+                  value={text}
+                  onChangeText={setText}
+                />
+                {imageUri && (
+                  <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+                )}
+
+                {/* ## Action Buttons ## */}
+                <View style={styles.actions}>
+                  <PrimaryButton
+                    onPress={pickImage}
+                    accessibilityLabel="Pick Image from Gallery"
+                    title="Pick Image"
+                    style={styles.actionBtn}
+                  />
+                  <PrimaryButton
+                    onPress={handlePost}
+                    title={loading ? 'Posting...' : 'Post'}
+                    accessibilityLabel="Posting a post"
+                    style={styles.actionBtn}
+                  />
+                </View>
+              </View>
+              {!keyboardVisible && <FootNav />}
+            </>
+
+          )}
         </View>
-      </View>
-      <FootNav />
-    </>
+
+      </TouchableWithoutFeedback>
+
+    </KeyboardAvoidingView>
   );
 };
 
