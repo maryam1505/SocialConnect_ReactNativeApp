@@ -16,6 +16,7 @@ const HomeScreen = () => {
   const route = useRoute();
   // const deepLinkPostId = (route.params as any)?.id;
   const { appTheme } = useTheme(); 
+
   useEffect(() => {
     const backAction = () => {
       /* ToastAndroid.show('Back again to exit', ToastAndroid.SHORT); */
@@ -28,6 +29,7 @@ const HomeScreen = () => {
     );
     return () => backHandler.remove();
   });
+  
   return (
     <>
       <TopNav/>

@@ -1,37 +1,37 @@
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { getAuth, sendPasswordResetEmail, signInWithEmailAndPassword} from '@react-native-firebase/auth';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import PrimaryButton from '../components/PrimaryButton';
+import GradientInput from '../components/GradientInput';
+import { getApp } from '@react-native-firebase/app';
+import { useTheme } from '../context/ThemeContext';
+import { RootStackParamList } from '../../App';
+import AppText from '../components/AppText';
 import React, { useCallback} from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { getApp } from '@react-native-firebase/app';
-import { getAuth, sendPasswordResetEmail, signInWithEmailAndPassword} from '@react-native-firebase/auth';
-import PrimaryButton from '../components/PrimaryButton';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../App';
-import GradientInput from '../components/GradientInput';
-import { useTheme } from '../context/ThemeContext';
-import AppText from '../components/AppText';
 
 
-type OnBoardingScreenNavigationProp = NativeStackNavigationProp<
+type ScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   'Login'
 >;
 
 
 const LoginScreen = () => {
-  const navigation = useNavigation<OnBoardingScreenNavigationProp>();
+  const navigation = useNavigation<ScreenNavigationProp>();
 
   const { appTheme } = useTheme(); 
   const app = getApp();
   const auth = getAuth(app);
 
-  // Navigate to Sign Up
+  /* ## Navigate to SignUp Screen ## */
   const handlePress = useCallback(() => {
     navigation.navigate('Signup');
   }, [navigation]);
 
-  // Formik Validation
+  /* ## Formik Validation ## */
   const formik = useFormik({
     initialValues: {
       email: '',
@@ -76,7 +76,7 @@ const LoginScreen = () => {
     },
   });
 
-  // Forgot Password
+  /* ## Forgot Password ## */
   const handleForgotPassword = async () => {
     if (!formik.values.email) {
       Alert.alert('Error', 'Please enter your email first.');
@@ -90,6 +90,7 @@ const LoginScreen = () => {
     }
   };
 
+  /* -------------------------------- ## Screen UI ## -------------------------------- */
   return (
     <View style={[styles.container, { backgroundColor: appTheme.colors.background },]}>
       <AppText variant='h1' style={styles.title}>Sign In</AppText>
@@ -118,7 +119,7 @@ const LoginScreen = () => {
 
         {/* Forgot Password */}
         <TouchableOpacity onPress={handleForgotPassword}>
-          <AppText style={[ styles.forgotPassword, { color: appTheme.colors.primaryLight }, ]}>Forgot your password?</AppText>
+          <AppText variant='small' style={[ styles.forgotPassword, { color: appTheme.colors.primaryLight }, ]}>Forgot your password?</AppText>
         </TouchableOpacity>
 
         {/* Sign In Button */}
@@ -127,7 +128,7 @@ const LoginScreen = () => {
           onPress={formik.handleSubmit}
           accessibilityLabel="Submitting Login Form"
         />
-        
+
         {/* Sign Up Link */}
         <View style={styles.signupContainer}>
           <AppText secondary variant='caption'>Don’t have an account?{' '}</AppText>

@@ -3,14 +3,14 @@ import React, { useCallback } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { getApp } from '@react-native-firebase/app';
-import { getAuth} from '@react-native-firebase/auth';
+import { getAuth, updateProfile} from '@react-native-firebase/auth';
 import PrimaryButton from '../components/PrimaryButton';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import GradientInput from '../components/GradientInput';
 import { useTheme } from '../context/ThemeContext';
-import { collection, getFirestore, serverTimestamp, setDoc } from '@react-native-firebase/firestore';
+import { collection, doc, getFirestore, serverTimestamp, setDoc } from '@react-native-firebase/firestore';
 import AppText from '../components/AppText';
 
 
@@ -18,6 +18,7 @@ type SignUpScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   'Signup'
 >;
+
 const SignupScreen = () => {
 
   const navigation = useNavigation<SignUpScreenNavigationProp>();
@@ -55,8 +56,9 @@ const SignupScreen = () => {
         );
         const user = userCredential.user;
 
-        await user.updateProfile({ displayName: values.name });
-        const userRef = collection(db, 'users', user.uid);
+        await updateProfile(user, { displayName: values.name });
+
+        const userRef = doc(db, 'users', user.uid);
         await setDoc(userRef, {
           userId: user.uid,
           name: values.name,
@@ -88,8 +90,10 @@ const SignupScreen = () => {
             errorMessage = 'Invalid email address.';
           } else if (errorCode === 'auth/weak-password') {
             errorMessage = 'Password must be at least 6 characters.';
-          } else if (errorCode === 'auth/configuration-not') {
-            errorMessage = 'Firebase authentication is not configured.';
+          } else if (errorCode === 'auth/operation-not-allowed') {
+            errorMessage = 'Email/password accounts are not enabled in Firebase Auth settings.';
+          } else if(errorCode === 'auth/configuration-not-found') {
+            errorMessage = 'Email/password not Found';
           }
         }
 

@@ -13,6 +13,7 @@ import PrimaryButton from '../components/PrimaryButton';
 import UserFeed from '../components/UserFeed';
 import FeedLoader from '../components/FeedLoader';
 import AppText from "../components/AppText"; 
+import SecondaryButton from '../components/SecondaryButton';
 
 type UserProfile = {
   name?: string;
@@ -21,6 +22,8 @@ type UserProfile = {
   bio?: string;
   avatar?: string;
   totalPosts?: number;
+  followersCount?: number;
+  followingCount?: number;
 };
 
 type ScreenNavigationProp = NativeStackNavigationProp<
@@ -60,13 +63,6 @@ const ProfileScreen = () => {
     return () => unsubscribe();
   }, [currentUser]);
 
-  /* ## Handle Profile Update ## */
-  const handleUpdateProfile = useCallback(()=>{
-    navigation.navigate('UpdateProfile');
-  }, [navigation]);
-
-  
-
   /* ## Manually Count the totalPosts of Current User ## */
   useEffect(() => {
     if (!currentUser) return;
@@ -80,11 +76,15 @@ const ProfileScreen = () => {
     return () => unsubscribe();
   }, [currentUser]);
 
+  const handleUpdate = () => {
+    navigation.navigate('UpdateProfile');
+  }
+
   return (
     <>
       {loading ? (
         <FeedLoader visible={loading} />
-        ): (
+        ) : (
           <>
           {/* Top navigation bar */}
             <TopNav />
@@ -113,10 +113,30 @@ const ProfileScreen = () => {
                       {profile.bio || "No bio available"}
                     </AppText>
 
-                    {/* Posts */}
-                    <AppText variant="small" style={{ marginTop: 10 }}>
-                      Posts: {profile.totalPosts || 0}
-                    </AppText>
+                    {/* ## ___________ User Stats ___________ ##*/}
+                    <View style={styles.statsRow}>
+
+                      {/* Posts */}
+                      <View style={styles.statCard}>
+                        <AppText variant='h3'>{profile.totalPosts || 0}</AppText>
+                        <AppText variant="caption">Posts</AppText>
+                      </View>
+    
+                      {/* Followers */}
+                      <View style={styles.statCard}>
+                        <AppText variant='h3'>{profile.followersCount || 0}</AppText>
+                        <AppText variant="caption">Followers</AppText>
+                      </View>
+    
+                      {/* Following */}
+                      <View style={styles.statCard}>
+                        <AppText variant='h3'>{profile.followingCount || 0}</AppText>
+                        <AppText variant="caption">Following</AppText>
+                      </View>
+
+                    </View>
+                      {/* ## ___________ Update Profile Button ___________ ##*/}
+                      <SecondaryButton title="Update Profile" onPress={handleUpdate} style={{marginTop: 20}}/>
                 </View>
               ) : (
 
@@ -147,7 +167,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-    justifyContent: 'space-between',
   },
   profileBox: {
     alignItems: 'center',
@@ -158,5 +177,22 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     marginBottom: 15,
+  },
+  statsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 30,
+    width: "90%",
+    alignSelf: "center",
+  },
+  statCard: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 12,
+    marginHorizontal: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    backgroundColor: "#fff",
   },
 });

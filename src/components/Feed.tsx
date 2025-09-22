@@ -12,11 +12,21 @@ import AppText from './AppText';
 const Feed: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasShuffled, setHasShuffled] = useState(false);
 
   const app = getApp();
   const currentUserId = getAuth(app).currentUser?.uid;
 
   const db = getFirestore(app);
+
+  function shuffleArray<T>(array: T[]): T[] {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
 
 /* ## Fetching Posts Except the current User ## */
   useEffect(() => {
@@ -66,8 +76,13 @@ const Feed: React.FC = () => {
               avatar: user?.avatar ?? null,
             };
           });
-          const randomPost = fetchedPosts.sort(() => Math.random() - 0.5);
-          setPosts(randomPost);
+          if (!hasShuffled) {
+            const shuffled = shuffleArray(fetchedPosts);
+            setPosts(shuffled);
+            setHasShuffled(true);
+          } else {
+            setPosts(fetchedPosts);
+          }
         }
         
       } catch (error: any) {
@@ -81,7 +96,7 @@ const Feed: React.FC = () => {
 
   }, [currentUserId]);
 
-
+  /* ________________________________ ## Feed UI ## ________________________________ */
   return (
     <View style={{ flex: 1 }}>
       {loading ? (

@@ -14,6 +14,9 @@ import CameraIcon from '../../assets/icons/camera.svg';
 import { supabase } from '../../supabase';
 import FeedLoader from '../components/FeedLoader';
 import AppText from '../components/AppText';
+import { RootStackParamList } from '../../App';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
 
 type UserProfile = {
   name?: string;
@@ -22,11 +25,18 @@ type UserProfile = {
   avatar?: string;
 };
 
+type ScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'Signup'
+>;
+
 const UpdateProfileScreen = () => {
   const { appTheme } = useTheme();
   const [initialValues, setInitialValues] = useState<UserProfile | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const navigation = useNavigation<ScreenNavigationProp>();
 
   const app = getApp();
   const db = getFirestore(app);
@@ -154,7 +164,9 @@ const UpdateProfileScreen = () => {
           { merge: true },
         );
 
-        Alert.alert('Success', 'Profile updated successfully!');
+        Alert.alert('Success', 'Profile updated successfully!', [
+          { text: 'OK', onPress: () => navigation.navigate('Profile') },
+        ]);
       } catch (error) {
         Alert.alert('Error', 'Failed to update profile.');
       }
@@ -167,7 +179,7 @@ const UpdateProfileScreen = () => {
     {formik.isSubmitting && (
       <FeedLoader visible />
     )}
-    
+
     {loading ? (
       <FeedLoader visible={loading} />
     ) : (

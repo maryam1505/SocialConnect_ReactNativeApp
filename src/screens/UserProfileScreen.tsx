@@ -22,6 +22,8 @@ type UserProfile = {
   bio?: string;
   avatar?: string;
   totalPosts?: number;
+  followersCount?: number;
+  followingCount?: number;
 };
 
 const UserProfileScreen: React.FC = () => {
@@ -56,7 +58,6 @@ const UserProfileScreen: React.FC = () => {
 
   /* -------------------------------- ## Handling Follow/Unfollow ## -------------------------------- */
 
-  
   /* ## Follow user System ## */
   const followUser = async (currentUserId: string, targetUserId: string) => {
     /* ## Prevent Self Follow ## */
@@ -152,37 +153,64 @@ const UserProfileScreen: React.FC = () => {
       ) : (
         <>
           <TopNav/>
+
           <View style={styles.container}>
-          {profile && (
-            <View style={styles.profileBox}>
-              {profile.avatar ? (
-                <Image source={{ uri: profile.avatar }} style={styles.avatar} />
-              ) : (
-                <View style={[styles.avatar, { backgroundColor: '#ccc' }]} />
-              )}
-              <AppText>{profile.name}</AppText>
-              <AppText>{profile.username}</AppText>
-              <AppText>{profile.bio}</AppText>
-              {/* Posts */}
-                <AppText variant="small" style={{ marginTop: 10 }}>
-                  Posts: {profile.totalPosts || 0}
-                </AppText>
-            </View>
-          )}
-          <View style={{flexDirection: 'row', justifyContent: 'center'}}>
-            <SecondaryButton onPress={handleMessage} title={
-              <View style={{flexDirection: "row", alignItems: "center"}}>
-                <MessageIcon />
-                <AppText variant="h4" style={{marginLeft: 6}}>Message</AppText>
-              </View>}
-            style={{width: '40%'}} />
-            {isFollowingUser? (
-              <SecondaryButton onPress={handleFollowToggle} title='Unfollow' style={{width: '40%'}} />
-            ): (
-              <PrimaryButton onPress={handleFollowToggle} title="Follow" style={{width: '40%'}}/>
+            {profile && (
+              <View style={styles.profileBox}>
+                {profile.avatar ? (
+                  <Image source={{ uri: profile.avatar }} style={styles.avatar} />
+                ) : (
+                  <View style={[styles.avatar, { backgroundColor: '#ccc' }]} />
+                )}
+                <AppText variant='h2'>{profile.name}</AppText>
+                <AppText variant='caption'>{profile.username}</AppText>
+                <AppText style={{marginTop: 10}}>{profile.bio}</AppText>
+
+                {/* ## ___________ Buttons ___________ ##*/}
+                <View style={{flexDirection: 'row', justifyContent: 'center', marginTop: 10}}>
+
+                  {/* Message Button with Icon */}
+                  <SecondaryButton onPress={handleMessage} title={
+                    <View style={{flexDirection: "row", alignItems: "center"}}>
+                      <MessageIcon />
+                      <AppText variant="h4" style={{marginLeft: 6}}>Message</AppText>
+                    </View>}
+                  style={{width: '40%'}} />
+
+                  {/* Conditional Follow/Unfollow Button */}
+                  {isFollowingUser? (
+                    <SecondaryButton onPress={handleFollowToggle} title='Unfollow' style={{width: '40%'}} />
+                  ): (
+                    <PrimaryButton onPress={handleFollowToggle} title="Follow" style={{width: '40%'}}/>
+                  )}
+                </View>
+
+                {/* ## ___________ User Stats ___________ ##*/}
+                <View style={styles.statsRow}>
+                  {/* Posts */}
+                  <View style={styles.statCard}>
+                    <AppText variant='h3'>{profile.totalPosts || 0}</AppText>
+                    <AppText variant="caption">Posts</AppText>
+                  </View>
+
+                  {/* Followers */}
+                  <View style={styles.statCard}>
+                    <AppText variant='h3'>{profile.followersCount || 0}</AppText>
+                    <AppText variant="caption">Followers</AppText>
+                  </View>
+
+                  {/* Following */}
+                  <View style={styles.statCard}>
+                    <AppText variant='h3'>{profile.followingCount || 0}</AppText>
+                    <AppText variant="caption">Following</AppText>
+                  </View>
+                </View>
+                
+              </View>
             )}
+
           </View>
-          </View>
+
           <FootNav/>
         </>
       )}
@@ -197,7 +225,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-    justifyContent: 'space-between',
   },
   profileBox: {
     alignItems: 'center',
@@ -208,5 +235,22 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     marginBottom: 15,
+  },
+  statsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 30,
+    width: "90%",
+    alignSelf: "center",
+  },
+  statCard: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 12,
+    marginHorizontal: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    backgroundColor: "#fff",
   },
 });

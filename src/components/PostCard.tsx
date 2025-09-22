@@ -42,7 +42,6 @@ interface UserData {
   username: string;
   avatar?: string;
 }
-// type ScreenNavigationProp<T extends keyof RootStackParamList> = NativeStackNavigationProp<RootStackParamList, T>;
 
 const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
@@ -61,7 +60,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const db = getFirestore(app);
   const currentUserId = getAuth(app).currentUser?.uid;
 
-  /* -------------------------------- ## Handling Likes ## -------------------------------- */
+  /* ________________________________ ## Handling Likes ## ________________________________ */
 
   /* ## Animation for like Button ## */
   const scale = useSharedValue(1);
@@ -139,7 +138,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   };
 
 
-  /* -------------------------------- ## Handling Comments ## -------------------------------- */
+  /* ________________________________ ## Handling Comments ## ________________________________ */
 
   /* ## Fetch Realtime Comments ## */
   useEffect(() => {
@@ -205,7 +204,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     setCommentText('');
   }
 
-  /* -------------------------------- ## Handling Shares ## -------------------------------- */
+  /* ________________________________ ## Handling Shares ## ________________________________ */
 
   /* ## Share Post System ## */
   const sharePost = async (post: Post) => {
@@ -251,7 +250,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     return unsubscribe;
   }, [post.id]);
 
-  /* -------------------------------- ## Handling Follow/UnFollow ## -------------------------------- */
+  /* ________________________________ ## Handling Follow/UnFollow ## ________________________________ */
   useEffect(() => {
     if (!currentUserId || !post.userId) return;
     if (currentUserId === post.userId) return;
@@ -335,7 +334,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     }
   };
 
-  /* -------------------------------- ## Screen UI ## -------------------------------- */
+  /* ________________________________ ## Post Card UI ## ________________________________ */
   return (
     <View style={styles.card}>
       {/* User Info */}
@@ -352,18 +351,26 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           </View>
           <View style={{ flex: 1 }}>
             <AppText variant='h4'>{post.name}</AppText>
-            {/* <Text style={styles.time}>{post.username}</Text> */}
-            <AppText variant='caption'>
-              {post?.createdAt
-                ? formatDistanceToNow(post.createdAt.toDate(), {
-                  addSuffix: false,
-                })
-                : 'Just now'}
-            </AppText>
+            {isFollowingUser && (
+              <AppText variant='caption'>{post.username}</AppText>
+            )}
+            {!isFollowingUser && (
+              <AppText variant='caption'>
+                {post?.createdAt
+                  ? formatDistanceToNow(post.createdAt.toDate())
+                  : 'Just now'}
+              </AppText>
+            )}
           </View>
         </TouchableOpacity>
-          {!isFollowingUser && (
+          {!isFollowingUser ? (
             <PrimaryButton onPress={() => handleFollowToggle(post.userId)} title="Follow" style={{width: '35%'}}/>
+          ):(
+            <AppText variant='caption'>
+              {post?.createdAt
+                ? formatDistanceToNow(post.createdAt.toDate())
+                : 'Just now'}
+            </AppText>
           )}
       </View>
 
@@ -398,19 +405,19 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                 color={isLiked ? 'red' : '#444'}
               />
             </Animated.View>
-            <AppText style={styles.engageText}>{likes}</AppText>
+            <AppText variant='caption' style={styles.engageText}>{likes}</AppText>
           </TouchableOpacity>
 
         {/* ## Comments ## */}
         <TouchableOpacity style={styles.engageItem} onPress={() => setShowComments(true)}>
           <Ionicons name="chatbubble-outline" size={20} color="#444" />
-          <AppText style={styles.engageText}>{commentCount}</AppText>
+          <AppText variant='caption' style={styles.engageText}>{commentCount}</AppText>
         </TouchableOpacity>
 
         {/* ## Share ## */}
         <TouchableOpacity style={styles.engageItem} onPress={() => sharePost(post)}>
           <Ionicons name="share-social-outline" size={20} color="#444" />
-          <AppText style={styles.engageText}>{sharesCount}</AppText>
+          <AppText variant='caption' style={styles.engageText}>{sharesCount}</AppText>
         </TouchableOpacity>
         
       </View>

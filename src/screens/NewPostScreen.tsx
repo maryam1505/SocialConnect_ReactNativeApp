@@ -50,8 +50,8 @@ const NewPostScreen = () => {
    /* ## ------- Upload Image to supabase and Post to Firebase Database ------- ## */
   const handlePost = async () => {
 
-    if (!imageUri && !text) {
-      Alert.alert('Post cannot be empty');
+    if (!imageUri) {
+      Alert.alert('Post must include an image');
       return;
     }
 
