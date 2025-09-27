@@ -6,8 +6,8 @@ import { getApp } from '@react-native-firebase/app';
 import { getAuth, onAuthStateChanged } from '@react-native-firebase/auth';
 import { ThemeProvider, useTheme } from "./src/context/ThemeContext";
 import messaging from '@react-native-firebase/messaging';
-import { doc, getFirestore, setDoc } from '@react-native-firebase/firestore';
-import { Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { doc, getFirestore, serverTimestamp, setDoc, updateDoc } from '@react-native-firebase/firestore';
+import { Alert, AppState, KeyboardAvoidingView, Platform } from 'react-native';
 import { checkOnboardingSeen } from './src/utils/storage';
 import Loader from './src/components/Loader';
 import { createNavigationContainerRef } from '@react-navigation/native';
@@ -27,6 +27,7 @@ import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
 import ExploreScreen from './src/screens/ExploreScreen';
 import ChatScreen from './src/screens/ChatScreen';
 import UserChatScreen from './src/screens/UserChatScreen';
+import { useUserPresence } from './src/hook/useUserPresence';
 
 export type RootStackParamList = {
   OnBoarding: undefined;
@@ -42,7 +43,7 @@ export type RootStackParamList = {
   ChangePassword: undefined;
   Explore: undefined;
   Chat: undefined;
-  UserChat: { userId : string };
+  UserChat: { chatId : string, chatUserId: string};
   UserProfile: { userId: string };
 };
 
@@ -64,6 +65,9 @@ function MainApp() {
   const app = getApp();
   const auth = getAuth(app);
   const db = getFirestore(app);
+
+  useUserPresence();
+
 
   /* ## Save FCM Token and Request Permission ## */
   const requestPermissionAndSaveToken = async () => {
@@ -104,7 +108,7 @@ function MainApp() {
     return unsubscribe;
   }, [user]);
 
-/* ## Saving Token on Login (Auth State) ## */
+  /* ## Saving Token on Login (Auth State) ## */
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
@@ -188,6 +192,7 @@ function MainApp() {
     </KeyboardAvoidingView>
   );
 }
+
 export default function App() {
   return (
     <ThemeProvider>

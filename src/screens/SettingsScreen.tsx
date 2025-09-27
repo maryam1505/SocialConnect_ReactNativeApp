@@ -8,6 +8,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { useNavigation } from '@react-navigation/native';
 import AppText from '../components/AppText';
+import SecondaryButton from '../components/SecondaryButton';
+import FootNav from '../components/FootNav';
 
 type MenuItem = {
   id: string;
@@ -71,15 +73,10 @@ const SettingsScreen = () => {
         keyExtractor={item => item.id}
         renderItem={renderItem}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
-        ListFooterComponent={
-          <View>
-            <TouchableOpacity style={styles.logoutWrapper} onPress={handleLogOut}>
-              <AppText style={styles.logoutBtn}>Log Out</AppText>
-            </TouchableOpacity>
-          </View>
-        }
       />
+        <SecondaryButton onPress={handleLogOut} title="Log Out" style={{marginBottom: 12}}/>
     </View>
+    <FootNav/>
     </>
   )
 }
@@ -88,9 +85,8 @@ export default SettingsScreen
 
 const styles = StyleSheet.create({
   container: { 
-    flex: 1, 
-    backgroundColor: "#fff" , 
-    width: "100%",
+    flex: 1,
+    paddingBottom:20,
   },
   item: {
     padding: 16,

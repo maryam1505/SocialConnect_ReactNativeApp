@@ -30,7 +30,7 @@ const OnBoardingScreen = () => {
         style={styles.imageBackground}
       />
       <View style={styles.content}>
-        <AppText variant='h1' style={[ styles.title, ]}>Let’s connect {'\n'}with each other</AppText>
+        <AppText variant='heading' style={[ styles.title, ]}>Let’s connect {'\n'}with each other</AppText>
         <AppText secondary style={[styles.subtitle]}>
           React native app using firebase authentication for better backend experience.
         </AppText>
@@ -78,5 +78,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     letterSpacing: 0,
     textAlign: 'center',
+    marginBottom: 15,
   },
 });

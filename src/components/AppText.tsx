@@ -2,7 +2,7 @@ import React, { ReactNode } from "react";
 import { Text, TextProps, TextStyle } from "react-native";
 import { useTheme } from "../context/ThemeContext";
 
-type Variant = "h1" | "h2" | "h3" | "h4" |"body" | "small" | "caption";
+type Variant = "h1" | "h2" | "h3" | "h4" |"body" | "small" | "caption" | "heading";
 
 type Props = TextProps & {
     children: ReactNode;

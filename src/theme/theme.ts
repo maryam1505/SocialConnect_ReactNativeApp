@@ -31,6 +31,7 @@ export type Theme = {
     body: object;
     small: object;
     caption: object;
+    heading: object;
   };
   radius: {
     sm: number;
@@ -68,6 +69,12 @@ export const LightTheme : Theme = {
     xl: 32,
   },
   typography: {
+    heading: {
+      // lineHeight: 20,
+      fontSize: 33,
+      ...customFonts.heavy,
+      color: "#000000",
+    },
     h1: {
       fontSize: 28,
       ...customFonts.bold,
@@ -147,6 +154,11 @@ export const DarkTheme : Theme = {
   radius: LightTheme.radius,
   shadows: LightTheme.shadows,
   typography: {
+    heading: {
+      fontSize: 28,
+      ...customFonts.heavy,
+      color: "#EEEEEE",
+    },
     h1: {
       fontSize: 28,
       ...customFonts.bold,

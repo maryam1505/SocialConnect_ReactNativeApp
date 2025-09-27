@@ -6,8 +6,8 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-na
 import { getApp } from '@react-native-firebase/app';
 import { getAuth } from '@react-native-firebase/auth';
 import { collection, deleteDoc, doc, getDoc, getFirestore, increment, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc } from '@react-native-firebase/firestore';
-import SendIcon from '../../assets/icons/send.svg';
-import CloseIcon from '../../assets/icons/close.svg';
+import SendIcon from '../../assets/icons/msg-send.svg';
+import Indicator from '../../assets/icons/Home-Indicator.svg';
 import { Share } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import { RootStackParamList } from '../../App';
@@ -16,7 +16,6 @@ import { useNavigation } from '@react-navigation/native';
 import PrimaryButton from './PrimaryButton';
 import { useTheme } from '../context/ThemeContext';
 import AppText from './AppText';
-import SecondaryButton from './SecondaryButton';
 
 
 export interface Post {
@@ -366,7 +365,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           {!isFollowingUser ? (
             <PrimaryButton onPress={() => handleFollowToggle(post.userId)} title="Follow" style={{width: '35%'}}/>
           ):(
-            <AppText variant='caption'>
+            <AppText variant='caption' style={{marginRight:3}}>
               {post?.createdAt
                 ? formatDistanceToNow(post.createdAt.toDate())
                 : 'Just now'}
@@ -423,17 +422,20 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       </View>
 
       {/* ## -------------------------- Comments Model -------------------------- ## */}
-      <Modal visible={showComments} animationType='slide' transparent>
+      <Modal visible={showComments} animationType='slide' transparent onRequestClose={() => setShowComments(false)} >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
 
             {/* ## Header ## */}
-            <View style={styles.modalHeader}>
+            <View style={{alignItems:'center', marginBottom:20}}>
+              <Indicator />
+            </View>
+            {/* <View style={styles.modalHeader}>
               <AppText variant='h3'>Comments</AppText>
               <TouchableOpacity onPress={()=>setShowComments(false)}>
                 <CloseIcon width={12} height={12} />
               </TouchableOpacity>
-            </View>
+            </View> */}
           
             {/* ## Comments List ## */}
             <FlatList data={comments} keyExtractor={item => item.id}
@@ -506,7 +508,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               style={styles.commentInput}
             />
             <TouchableOpacity style={{ marginLeft: 10 }} onPress={addComment}>
-              <SendIcon width={32} height={32} />
+              <SendIcon width={50} height={50} />
             </TouchableOpacity>
           </View>
           </View>
@@ -530,7 +532,7 @@ const styles = StyleSheet.create({
   header: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    justifyContent:'space-between' , 
+    justifyContent:'space-between', 
     marginBottom: 10 
   },
 
@@ -595,15 +597,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.3)', 
   },
   modalContent: {
-    height: '70%',
+    height: '95%',
     backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 17,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 10,
   },
   modalHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
   },
@@ -616,7 +618,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 20,
+    borderRadius: 10,
     paddingHorizontal: 12,
   },
 });

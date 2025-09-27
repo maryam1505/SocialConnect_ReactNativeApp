@@ -1,7 +1,7 @@
-import { deleteDoc, doc, getFirestore, increment, onSnapshot, runTransaction, setDoc, updateDoc } from '@react-native-firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDocs, getFirestore, increment, onSnapshot, query, runTransaction, serverTimestamp, setDoc, updateDoc, where } from '@react-native-firebase/firestore';
 import { Image, StyleSheet, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { RouteProp, useRoute } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
 import PrimaryButton from '../components/PrimaryButton';
 import AppText from '../components/AppText';
@@ -12,6 +12,7 @@ import FootNav from '../components/FootNav';
 import { getApp } from '@react-native-firebase/app';
 import { getAuth } from '@react-native-firebase/auth';
 import MessageIcon from "../../assets/icons/msg.svg";
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type UserProfileRouteProp = RouteProp<RootStackParamList, 'UserProfile'>;
 
@@ -26,6 +27,11 @@ type UserProfile = {
   followingCount?: number;
 };
 
+type ScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'UserProfile'
+>;
+
 const UserProfileScreen: React.FC = () => {
   const route = useRoute<UserProfileRouteProp>();
   const [loading, setLoading] = useState(true);
@@ -33,6 +39,8 @@ const UserProfileScreen: React.FC = () => {
   const [isFollowingUser, setIsFollowingUser] = useState(false);
   const currentUserId = getAuth(getApp()).currentUser?.uid;
   const { userId } = route.params;
+
+  const navigation = useNavigation<ScreenNavigationProp>();
 
   const app = getApp();
   const db = getFirestore(app);
@@ -141,8 +149,39 @@ const UserProfileScreen: React.FC = () => {
 
 
   /* -------------------------------- ## Handling Message ## -------------------------------- */
-  const handleMessage = () => {
+  const handleMessage = async () => {
+    if (!currentUserId || !userId) return;
+    
+    try {
+      const chatsRef = collection(db, "chats");
+      const q = query(
+        chatsRef,
+        where("members", "in", [
+          [currentUserId, userId],
+          [userId, currentUserId]
+        ])
+      );
+      const querySnapshot = await getDocs(q);
+    
+      let chatId: string;
 
+      if (!querySnapshot.empty) {
+        /* ## Chat already started ## */
+        chatId = querySnapshot.docs[0].id;
+      } else {
+        //* ## Create a new chat room ## */
+        const newChatRef = await addDoc(chatsRef, {
+          members: [currentUserId, userId],
+          lastMessage: "",
+          updatedAt: serverTimestamp(),
+        });
+        chatId = newChatRef.id;
+      }
+      
+      navigation.navigate("UserChat", { chatId, chatUserId: userId });
+    } catch (error) {
+      console.error("Error starting chat:", error);
+    }
   }
 
 
