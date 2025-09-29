@@ -4,13 +4,20 @@ import TopNav from '../components/TopNav'
 import FootNav from '../components/FootNav'
 import ExploreSearch from '../../assets/icons/explore-search.svg';
 import Feed from '../components/Feed';
-import FeedLoader from '../components/FeedLoader';
 
 const ExploreScreen = () => {
   const [query, setQuery] = useState("");
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [debouncedQuery, setDebouncedQuery] = useState(query);
   const inputRef = useRef<TextInput>(null);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [query]);
 
   useEffect(() => {
       const showSub = Keyboard.addListener("keyboardDidShow", () => setKeyboardVisible(true));
@@ -19,38 +26,32 @@ const ExploreScreen = () => {
         showSub.remove();
         hideSub.remove();
       };
-    }, []);
+  }, []);
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined } 
     keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={{flex:1}}>
-          {loading ? (
-            <FeedLoader visible={loading} />
-          ) : (
-            <>
-              <TopNav />
-              {/* ## Screen's  Main Container ## */}
-              <View style={styles.container}>
-                {/* Search Bar */}
-                <Pressable onPress={() => inputRef.current?.focus()} style={styles.searchContainer}>
-                  <ExploreSearch />
-                  <TextInput
-                    ref={inputRef}
-                    style={styles.searchInput}
-                    placeholder="Search..."
-                    placeholderTextColor="#A5BCE7"
-                    value={query}
-                    onChangeText={setQuery}
-                  />
-                </Pressable>
-                <Feed />
-              </View>
-              {!keyboardVisible && <FootNav />}
-            </>
+          <TopNav />
+          {/* ## Screen's  Main Container ## */}
+          <View style={styles.container}>
+            {/* Search Bar */}
+            <Pressable onPress={() => inputRef.current?.focus()} style={styles.searchContainer}>
+              <ExploreSearch />
+              <TextInput
+                ref={inputRef}
+                style={styles.searchInput}
+                placeholder="Search..."
+                placeholderTextColor="#A5BCE7"
+                value={query}
+                onChangeText={setQuery}
+              />
+            </Pressable>
+            <Feed searchQuery={debouncedQuery} />
+          </View>
+          {!keyboardVisible && <FootNav />}
 
-          )}
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>

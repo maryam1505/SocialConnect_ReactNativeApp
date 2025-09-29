@@ -10,6 +10,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { useNavigation } from '@react-navigation/native'
 import { getAuth } from '@react-native-firebase/auth'
 import { formatDistanceToNow } from 'date-fns'
+import FeedLoader from '../components/FeedLoader'
 
 type ScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -30,6 +31,7 @@ type Chat = {
 
 const ChatScreen = () => {
   const [chats, setChats] = useState([]);
+  const [loading, setLoading] =useState(true);
   const app = getApp();
   const db = getFirestore(app);
   const currentUserId = getAuth(app).currentUser?.uid;
@@ -39,7 +41,7 @@ const ChatScreen = () => {
 
   const navigation = useNavigation<ScreenNavigationProp>();
 
-  
+  /* ______________________________ Fetching Chat Data ______________________________ */
   useEffect(() => {
     const q = query(collection(db, "chats"), orderBy("updatedAt", "desc"));
     const unsubscribe = onSnapshot(q, async (snapshot) => {
@@ -57,18 +59,22 @@ const ChatScreen = () => {
                 otherUser: userSnap.data(),
               };
             }
+            setLoading(false);
           } catch (error) {
+            setLoading(false);
             console.error("Error fetching user data:", error);
           }
           return chat;
         })
       );
+      setLoading(false);
       setChats(enrichChat);
     });
 
     return unsubscribe;
   }, []);
 
+  /* ______________________________ Render Chat Item ______________________________ */
   const renderItem = ({ item }: { item: Chat }) => (
     <TouchableOpacity 
       style={styles.chatItem} 
@@ -100,20 +106,28 @@ const ChatScreen = () => {
   );
 
   return (
-    <>
-    <TopNav/>
-      <View style={styles.container}>
-        <FlatList<Chat>
-          data={chats}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          ListEmptyComponent={
-            <AppText variant='caption' style={{ textAlign: "center", marginTop: 20 }}>No Chat started yet!</AppText>
-          }
-        />
-      </View>
-    <FootNav/>
-    </>
+    <View style={{flex:1}}>
+      {loading ? (
+        <FeedLoader visible={loading} />
+      ) : (
+        <>
+          <TopNav/>
+            <View style={styles.container}>
+              <FlatList<Chat>
+                data={chats}
+                keyExtractor={(item) => item.id}
+                renderItem={renderItem}
+                ListEmptyComponent={
+                  <AppText variant='caption' style={{ textAlign: "center", marginTop: 20 }}>No Chat started yet!</AppText>
+                }
+              />
+            </View>
+          <FootNav/>
+        </>
+      )
+    }
+    </View>
+
   )
 }
 

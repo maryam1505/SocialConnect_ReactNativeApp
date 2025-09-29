@@ -36,7 +36,7 @@ export const useUserPresence = () => {
       );
     };
 
-    // App state listener
+    /* App state listener */
     const subscription = AppState.addEventListener("change", (state) => {
       if (state === "active") {
         setOnline();
@@ -45,13 +45,12 @@ export const useUserPresence = () => {
       }
     });
 
-    // Mark online immediately
     setOnline();
 
-    // Cleanup
     return () => {
       setOffline();
       subscription.remove();
     };
-  }, []);
+  }, []); 
+  
 };

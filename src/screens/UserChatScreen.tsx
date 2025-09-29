@@ -10,6 +10,7 @@ import TopNav from '../components/TopNav';
 import SendIcon from '../../assets/icons/msg-send.svg';
 import LinearGradient from 'react-native-linear-gradient';
 import ChatHeader from '../components/ChatHeader';
+import FeedLoader from '../components/FeedLoader';
 // import Ionicons from '@react-native-vector-icons/ionicons';
 
 
@@ -38,6 +39,7 @@ const UserChatScreen: React.FC = () => {
 
   if(!currentUserId) return;
 
+  /* ______________________________ Fetching Messages ______________________________ */
   useEffect(() => {
     const messagesRef = collection(db, "chats", chatId, "messages");
     const q = query(messagesRef, orderBy("createdAt", "asc"));
@@ -51,6 +53,7 @@ const UserChatScreen: React.FC = () => {
     return unsubscribe;
   }, [chatId]);
   
+  /* ______________________________ Fetching Other User Docs ______________________________ */
   useEffect(() => {
   const chatDocRef = doc(db, "chats", chatId);
 
@@ -76,6 +79,7 @@ const UserChatScreen: React.FC = () => {
   return () => unsub();
 }, [chatId, currentUserId]);
 
+  /* ______________________________ Send Message Function ______________________________ */
   const sendMessage = async () => {
     if (!input.trim() || !currentUserId) return;
 
@@ -94,6 +98,7 @@ const UserChatScreen: React.FC = () => {
     setInput("");
   };
 
+  /* ______________________________ Render Message Item ______________________________ */
   const renderMessage = (item: Message) => {
     const isSender = item.senderId === currentUserId;
       if (isSender) {
@@ -119,32 +124,37 @@ const UserChatScreen: React.FC = () => {
   };
 
   return (
-    <>
-      <ChatHeader chatUser={chatUser}/>
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <FlatList
-          data={messages}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => renderMessage(item)}
-          contentContainerStyle={{ padding: 10 }}
-        />
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Say something..."
-            value={input}
-            onChangeText={setInput}
-          />
-          <TouchableOpacity onPress={sendMessage}>
-            <SendIcon width={50} height={50}/>
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
-      
-    </>
+    <View style={{flex:1}}>
+        {loading ? (
+          <FeedLoader visible={loading} />
+        ) : (
+          <>
+            <ChatHeader chatUser={chatUser}/>
+            <KeyboardAvoidingView
+              style={styles.container}
+              behavior={Platform.OS === "ios" ? "padding" : undefined}
+            >
+              <FlatList
+                data={messages}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => renderMessage(item)}
+                contentContainerStyle={{ padding: 10 }}
+              />
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Say something..."
+                  value={input}
+                  onChangeText={setInput}
+                />
+                <TouchableOpacity onPress={sendMessage}>
+                  <SendIcon width={50} height={50}/>
+                </TouchableOpacity>
+              </View>
+            </KeyboardAvoidingView>
+          </>
+        ) }
+    </View>
   )
 }
 
