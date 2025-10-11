@@ -206,21 +206,21 @@ const UserProfileScreen: React.FC = () => {
                 <AppText style={{marginTop: 10}}>{profile.bio}</AppText>
 
                 {/* ## ___________ Buttons ___________ ##*/}
-                <View style={{flexDirection: 'row', justifyContent: 'center', marginTop: 10}}>
+                <View style={{flexDirection: 'row', marginTop: 10}}>
 
                   {/* Message Button with Icon */}
                   <SecondaryButton onPress={handleMessage} title={
-                    <View style={{flexDirection: "row", alignItems: "center"}}>
+                    <View style={{flexDirection: "row", alignItems: "center",}}>
                       <MessageIcon />
-                      <AppText variant="h4" style={{marginLeft: 6}}>Message</AppText>
+                      <AppText variant="h4" style={{marginLeft: 3}}>Message</AppText>
                     </View>}
-                  style={{width: '40%'}} />
+                  style={{width: '45%'}} />
 
                   {/* Conditional Follow/Unfollow Button */}
                   {isFollowingUser? (
-                    <SecondaryButton onPress={handleFollowToggle} title='Unfollow' style={{width: '40%'}} />
+                    <SecondaryButton onPress={handleFollowToggle} title='Unfollow' style={{width: '45%'}} />
                   ): (
-                    <PrimaryButton onPress={handleFollowToggle} title="Follow" style={{width: '40%'}}/>
+                    <PrimaryButton onPress={handleFollowToggle} title="Follow" style={{width: '45%'}}/>
                   )}
                 </View>
 

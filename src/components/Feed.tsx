@@ -39,7 +39,7 @@ const Feed: React.FC<FeedProps> = ({ searchQuery = "" }) => {
     setLoading(true);
 
     const processSnapshot = async (snap: any) => {
-      if(snap.empty()) return[];
+      if(snap.empty) return[];
 
       /* ## Fetching Raw Posts ## */
       const rawPosts = snap.docs.map((docSnap: any)=> ({

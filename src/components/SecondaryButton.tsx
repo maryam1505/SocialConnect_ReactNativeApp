@@ -31,7 +31,7 @@ const SecondaryButton: React.FC<SecondaryButtonProps> = ({
             >
 
                 {/* Inner Transparent Background */}
-                <View style={[styles.innerBackground, {paddingVertical: typeof title === "string" ? 12 : 5}]}>
+                <View style={[styles.innerBackground, {paddingVertical: typeof title === "string" ? 12 : 6}]}>
                     {/* Gradient Text using MaskedView */}
                     <MaskedView
                         maskElement={
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     innerBackground: {
         backgroundColor: "#fff",
         borderRadius: 40,
-        
+        // paddingHorizontal:40,
         alignItems: "center",
         width: "100%",
     },

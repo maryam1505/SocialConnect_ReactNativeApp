@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import AppText from '../components/AppText'
 import TopNav from '../components/TopNav'
 import FootNav from '../components/FootNav'
-import { collection, doc, getDoc, getFirestore, onSnapshot, orderBy, query } from '@react-native-firebase/firestore'
+import { collection, doc, getDoc, getFirestore, onSnapshot, orderBy, query, where } from '@react-native-firebase/firestore'
 import { getApp } from '@react-native-firebase/app'
 import { RootStackParamList } from '../../App'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -11,6 +11,7 @@ import { useNavigation } from '@react-navigation/native'
 import { getAuth } from '@react-native-firebase/auth'
 import { formatDistanceToNow } from 'date-fns'
 import FeedLoader from '../components/FeedLoader'
+import { string } from 'yup'
 
 type ScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -36,43 +37,69 @@ const ChatScreen = () => {
   const db = getFirestore(app);
   const currentUserId = getAuth(app).currentUser?.uid;
 
-  if(!currentUserId) return;
+  if (!currentUserId) {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <AppText variant="caption">Please log in to view chats.</AppText>
+    </View>
+  );
+}
 
 
   const navigation = useNavigation<ScreenNavigationProp>();
 
   /* ______________________________ Fetching Chat Data ______________________________ */
   useEffect(() => {
-    const q = query(collection(db, "chats"), orderBy("updatedAt", "desc"));
+    if (!currentUserId) return;
+
+    let isMounted = true;
+    setLoading(true);
+
+    // Fetch chats where current user is a member
+    const q = query(
+      collection(db, "chats"),
+      where("members", "array-contains", currentUserId),
+      orderBy("updatedAt", "desc")
+    );
+
     const unsubscribe = onSnapshot(q, async (snapshot) => {
-      const chatDocs = snapshot.docs.map((doc :any) => ({ id: doc.id, ...doc.data() }));
+      if (!isMounted) return;
+
+      const chatDocs = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+
+      // Enrich each chat with the other user's info
       const enrichChat = await Promise.all(
-        chatDocs.map(async (chat: any)=> {
-          const otherUserId = chat.members.find((id: string) => id !== currentUserId);
-          if(!otherUserId) return chat;
+        chatDocs.map(async (chat: any) => {
+          const otherUserId = chat.members.find((id: String) => id !== currentUserId);
+          if (!otherUserId) return chat;
 
           try {
-            const userSnap = await getDoc(doc(db, 'users', otherUserId));
+            const userSnap = await getDoc(doc(db, "users", otherUserId));
             if (userSnap.exists()) {
               return {
                 ...chat,
                 otherUser: userSnap.data(),
               };
             }
-            setLoading(false);
           } catch (error) {
-            setLoading(false);
             console.error("Error fetching user data:", error);
           }
           return chat;
         })
       );
-      setLoading(false);
-      setChats(enrichChat);
+
+      if (isMounted) {
+        setChats(enrichChat);
+        setLoading(false);
+      }
     });
 
-    return unsubscribe;
-  }, []);
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, [currentUserId]);
+
 
   /* ______________________________ Render Chat Item ______________________________ */
   const renderItem = ({ item }: { item: Chat }) => (
@@ -94,7 +121,9 @@ const ChatScreen = () => {
         {/* Name + Last Message */}
         <View>
           <AppText>{item.otherUser?.name || "User"}</AppText>
-          <AppText variant='caption'>{item.lastMessage}</AppText>
+          <AppText variant="caption">
+            {item.lastMessage || "No messages yet"}
+          </AppText>
         </View>
       </View>
 
@@ -107,10 +136,10 @@ const ChatScreen = () => {
 
   return (
     <View style={{flex:1}}>
-      {loading ? (
+      {/* {loading ? (
         <FeedLoader visible={loading} />
       ) : (
-        <>
+        <> */}
           <TopNav/>
             <View style={styles.container}>
               <FlatList<Chat>
@@ -123,9 +152,9 @@ const ChatScreen = () => {
               />
             </View>
           <FootNav/>
-        </>
+        {/* </>
       )
-    }
+    } */}
     </View>
 
   )

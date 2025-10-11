@@ -1,10 +1,10 @@
 import { FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
 import AppText from '../components/AppText';
 import { getApp } from '@react-native-firebase/app';
-import { addDoc, collection, doc, getFirestore, onSnapshot, orderBy, query, serverTimestamp, updateDoc } from '@react-native-firebase/firestore';
+import { addDoc, collection, doc, FirebaseFirestoreTypes, getFirestore, onSnapshot, orderBy, query, serverTimestamp, updateDoc } from '@react-native-firebase/firestore';
 import { getAuth } from '@react-native-firebase/auth';
 import TopNav from '../components/TopNav';
 import SendIcon from '../../assets/icons/msg-send.svg';
@@ -20,7 +20,7 @@ type Message = {
   id: string;
   text: string;
   senderId: string;
-  createdAt: any;
+  createdAt?: FirebaseFirestoreTypes.Timestamp | null;
 };
 
 const UserChatScreen: React.FC = () => {
@@ -30,6 +30,7 @@ const UserChatScreen: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
+  const flatListRef = useRef<FlatList>(null);
 
   const [chatUser, setChatUser] = useState<any>(null);
 
@@ -37,7 +38,13 @@ const UserChatScreen: React.FC = () => {
   const db = getFirestore(app);
   const currentUserId = getAuth(app).currentUser?.uid;
 
-  if(!currentUserId) return;
+  if (!currentUserId) {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <AppText variant="caption">Please log in to continue chatting.</AppText>
+    </View>
+  );
+}
 
   /* ______________________________ Fetching Messages ______________________________ */
   useEffect(() => {
@@ -45,38 +52,43 @@ const UserChatScreen: React.FC = () => {
     const q = query(messagesRef, orderBy("createdAt", "asc"));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      setMessages(snapshot.docs.map((doc :any) => ({ id: doc.id, ...(doc.data() as Omit<Message, "id">), })));
-      
+      // setMessages(snapshot.docs.map((doc :any) => ({ id: doc.id, ...(doc.data() as Omit<Message, "id">), })));
+      const sorted = snapshot.docs
+        .map((doc: any) => ({ id: doc.id, ...(doc.data() as Omit<Message, "id">) }))
+        .sort((a: any, b: any) => a.createdAt?.seconds - b.createdAt?.seconds);
+      setMessages(sorted);
+      setLoading(false);
     });
 
-    setLoading(false);
     return unsubscribe;
   }, [chatId]);
   
   /* ______________________________ Fetching Other User Docs ______________________________ */
   useEffect(() => {
-  const chatDocRef = doc(db, "chats", chatId);
+    const chatDocRef = doc(db, "chats", chatId);
+    let unSubUser: (() => void) | null = null;
 
-  const unsub = onSnapshot(chatDocRef, (chatSnap) => {
-    if (chatSnap.exists()) {
+    const unSubChat = onSnapshot(chatDocRef, (chatSnap) => {
+      if (!chatSnap.exists()) return;
+
       const chatData = chatSnap.data();
-      if(!chatData) return;
-      const otherUserId = chatData.members.find((id: string) => id !== currentUserId);
+      if (!chatData) return;
 
+      const otherUserId = chatData.members.find((id: string) => id !== currentUserId);
       if (otherUserId) {
         const userDocRef = doc(db, "users", otherUserId);
-        const unsubUser = onSnapshot(userDocRef, (userSnap) => {
+        unSubUser = onSnapshot(userDocRef, (userSnap) => {
           if (userSnap.exists()) {
             setChatUser({ id: userSnap.id, ...userSnap.data() });
           }
         });
-
-        return () => unsubUser();
       }
-    }
-  });
+    });
 
-  return () => unsub();
+  return () => {
+    unSubChat();
+    if (unSubUser) unSubUser();
+  };
 }, [chatId, currentUserId]);
 
   /* ______________________________ Send Message Function ______________________________ */
@@ -89,13 +101,14 @@ const UserChatScreen: React.FC = () => {
       createdAt: serverTimestamp(),
     });
 
-    // also update parent chat doc
+    /* Update the last Msg */
     await updateDoc(doc(db, "chats", chatId), {
       lastMessage: input,
       updatedAt: serverTimestamp(),
     });
 
     setInput("");
+    flatListRef.current?.scrollToEnd({ animated: true });
   };
 
   /* ______________________________ Render Message Item ______________________________ */
@@ -135,6 +148,7 @@ const UserChatScreen: React.FC = () => {
               behavior={Platform.OS === "ios" ? "padding" : undefined}
             >
               <FlatList
+                ref={flatListRef}
                 data={messages}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => renderMessage(item)}
@@ -147,8 +161,8 @@ const UserChatScreen: React.FC = () => {
                   value={input}
                   onChangeText={setInput}
                 />
-                <TouchableOpacity onPress={sendMessage}>
-                  <SendIcon width={50} height={50}/>
+                <TouchableOpacity onPress={sendMessage} disabled={!input.trim()}>
+                  <SendIcon width={50} height={50} opacity={input.trim() ? 1 : 0.5} />
                 </TouchableOpacity>
               </View>
             </KeyboardAvoidingView>
